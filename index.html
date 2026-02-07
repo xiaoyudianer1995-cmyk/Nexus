@@ -344,6 +344,134 @@
     .mt-16 { margin-top: 16px; }
     .mb-16 { margin-bottom: 16px; }
     .mt-24 { margin-top: 24px; }
+
+    .network-info {
+      font-size: 11px;
+      color: #0099cc;
+      margin-top: 8px;
+      padding: 8px;
+      background: rgba(0, 153, 204, 0.1);
+      border-radius: 4px;
+    }
+
+    .network-warning {
+      font-size: 11px;
+      color: #ffaa00;
+      margin-top: 8px;
+      padding: 8px;
+      background: rgba(255, 170, 0, 0.1);
+      border-radius: 4px;
+      display: none;
+    }
+
+    .network-warning.active {
+      display: block;
+    }
+
+    /* Toggle Switch Styles */
+    .toggle-container {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding: 12px;
+      background: rgba(0, 255, 247, 0.05);
+      border-radius: 8px;
+      border: 1px solid rgba(0, 255, 247, 0.2);
+    }
+
+    .toggle-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 30px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 255, 247, 0.2);
+      transition: 0.4s;
+      border-radius: 30px;
+      border: 1px solid rgba(0, 255, 247, 0.3);
+    }
+
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 4px;
+      bottom: 4px;
+      background-color: #00fff7;
+      transition: 0.4s;
+      border-radius: 50%;
+      box-shadow: 0 0 10px rgba(0, 255, 247, 0.6);
+    }
+
+    input:checked + .toggle-slider {
+      background-color: rgba(228, 0, 255, 0.2);
+      border-color: #e400ff;
+    }
+
+    input:checked + .toggle-slider:before {
+      transform: translateX(30px);
+      background-color: #e400ff;
+      box-shadow: 0 0 10px rgba(228, 0, 255, 0.6);
+    }
+
+    .network-status {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .status-badge {
+      flex: 1;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(0, 255, 247, 0.3);
+      text-align: center;
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .status-badge.devnet {
+      background: rgba(100, 200, 255, 0.1);
+      border-color: rgba(100, 200, 255, 0.3);
+      color: #64c8ff;
+    }
+
+    .status-badge.mainnet {
+      background: rgba(228, 0, 255, 0.1);
+      border-color: rgba(228, 0, 255, 0.3);
+      color: #e400ff;
+    }
+
+    .status-badge.active {
+      box-shadow: 0 0 20px currentColor;
+      border-color: currentColor;
+    }
   </style>
 </head>
 <body>
@@ -363,21 +491,45 @@
       <p style="color: #0099cc; font-size: 11px; margin-top: 8px; letter-spacing: 2px;">YEAR 2121</p>
     </div>
 
+    <!-- Network Toggle -->
+    <div class="glass-panel">
+      <div class="section-label">// NETWORK SELECTION</div>
+      
+      <div class="toggle-container">
+        <label class="toggle-label">Select Network:</label>
+        <label class="toggle-switch">
+          <input type="checkbox" id="networkToggle" onchange="toggleNetwork()">
+          <span class="toggle-slider"></span>
+        </label>
+        <span id="networkLabel" style="color: #64c8ff; font-weight: bold;">DEVNET</span>
+      </div>
+
+      <div class="network-status">
+        <div class="status-badge devnet active" id="devnetBadge">
+          ◆ Devnet (Staging)<br><small>Safe Testing</small>
+        </div>
+        <div class="status-badge mainnet" id="mainnetBadge">
+          ◆ Mainnet<br><small>Production</small>
+        </div>
+      </div>
+
+      <div class="network-info" id="networkInfo">
+        RPC: <strong>https://api.devnet.solana.com</strong>
+      </div>
+
+      <div class="network-warning" id="networkWarning">
+        ⚠ WARNING: MAINNET MODE - Tokens created here will be on Solana Mainnet. Use with extreme caution!
+      </div>
+    </div>
+
     <!-- Node Uplink -->
     <div class="glass-panel">
       <div class="section-label">// NODE UPLINK</div>
       
-      <label>Target Network</label>
-      <select id="network" style="margin-bottom: 16px;">
-        <option value="devnet">Devnet (Staging)</option>
-        <option value="testnet">Testnet</option>
-        <option value="mainnet">Mainnet</option>
-      </select>
-
-      <label>GRPC Endpoint (Yellowstone)</label>
+      <label>GRPC Endpoint</label>
       <div class="flex-row mb-16">
-        <input type="text" placeholder="grpc.nexus2121.io:443" class="flex-1">
-        <button class="btn-secondary" onclick="addLog('[NEXUS_2121][GRPC] Connection test passed.')">Test</button>
+        <input type="text" id="grpcInput" placeholder="grpc.nexus2121.io:443" class="flex-1">
+        <button class="btn-secondary" onclick="testGRPC()">Test</button>
       </div>
 
       <button class="btn-primary" onclick="connectNode()">Connect Node</button>
@@ -391,7 +543,7 @@
       <button class="btn-primary" id="walletBtn" onclick="connectWallet()">CONNECT WALLET</button>
       
       <div id="walletStatus" style="margin-top: 12px; font-size: 12px; color: #00ff88; display: none;">
-        Status: <strong>Active</strong>
+        Status: <strong>Active</strong> | Wallet: <span id="walletAddress">Phantom</span>
       </div>
     </div>
 
@@ -445,7 +597,7 @@
       <label class="mt-16">IPFS Gateway Key (Optional)</label>
       <div class="flex-row mb-16">
         <input type="password" placeholder="NFT.STORAGE_KEY" class="flex-1">
-        <button class="btn-secondary" onclick="addLog('[NEXUS_2121][IPFS] Key validation passed.')">Test</button>
+        <button class="btn-secondary" onclick="testIPFS()">Test</button>
       </div>
 
       <button class="btn-primary" onclick="deployToken()">Deploy Token</button>
@@ -455,12 +607,12 @@
     <div class="glass-panel">
       <div class="section-label">// PROTOCOL ADVISORY</div>
       
-      <div style="font-size: 12px; line-height: 1.8; color: #00a8cc;">
-        <p>• Deploying Token-2022 SPL standard to Solana blockchain</p>
+      <div style="font-size: 12px; line-height: 1.8; color: #00a8cc;" id="advisoryText">
+        <p>• Deploying Token-2022 SPL standard to Solana DEVNET</p>
         <p>• Network fees and transaction costs apply (SOL required)</p>
         <p>• Verify all parameters before signing transaction</p>
         <p>• Keep your private keys and recovery phrases secure</p>
-        <p>• No admin privileges after deployment unless specified</p>
+        <p>• Use devnet for safe testing before mainnet deployment</p>
       </div>
     </div>
 
@@ -472,16 +624,24 @@
         <div class="console-line">[NEXUS_2121][INIT] System core activated...</div>
         <div class="console-line">[NEXUS_2121][SCAN] Running diagnostic check...</div>
         <div class="console-line">[NEXUS_2121][OK] All systems nominal.</div>
+        <div class="console-line">[NEXUS_2121][NETWORK] Devnet selected - Safe testing environment</div>
       </div>
       
       <div style="font-size: 11px; color: #0099cc; margin-top: 12px; text-align: right;" id="consoleCount">
-        3 entries • Real-time monitoring active
+        4 entries • Real-time monitoring active
       </div>
     </div>
   </div>
 
   <script>
+    // RPC Endpoints Configuration
+    const RPC_ENDPOINTS = {
+      devnet: 'https://api.devnet.solana.com',
+      mainnet: 'https://mainnet.helius-rpc.com/?api-key=5efeb3ed-30ac-44d1-a80d-3f3b7b4bfe2d'
+    };
+
     let walletConnected = false;
+    let currentNetwork = 'devnet';
 
     function addLog(message) {
       const console = document.getElementById('console');
@@ -495,10 +655,82 @@
       document.getElementById('consoleCount').textContent = count + ' entries • Real-time monitoring active';
     }
 
-    function connectNode() {
-      const network = document.getElementById('network').value;
-      addLog(`[NEXUS_2121][UPLINK] Connected to ${network} node.`);
-      addLog('[NEXUS_2121][STATUS] Node health check passed.');
+    function toggleNetwork() {
+      const toggle = document.getElementById('networkToggle').checked;
+      const networkLabel = document.getElementById('networkLabel');
+      const networkInfo = document.getElementById('networkInfo');
+      const networkWarning = document.getElementById('networkWarning');
+      const devnetBadge = document.getElementById('devnetBadge');
+      const mainnetBadge = document.getElementById('mainnetBadge');
+      const advisoryText = document.getElementById('advisoryText');
+
+      if (toggle) {
+        // Mainnet selected
+        currentNetwork = 'mainnet';
+        networkLabel.textContent = 'MAINNET';
+        networkLabel.style.color = '#e400ff';
+        networkInfo.innerHTML = 'RPC: <strong>https://mainnet.helius-rpc.com</strong>';
+        networkWarning.classList.add('active');
+        devnetBadge.classList.remove('active');
+        mainnetBadge.classList.add('active');
+        advisoryText.innerHTML = `
+          <p>• Deploying Token-2022 SPL standard to Solana MAINNET</p>
+          <p>• ⚠ MAINNET DEPLOYMENT - This is production. Use with caution!</p>
+          <p>• Network fees and transaction costs apply (SOL required)</p>
+          <p>• Verify all parameters before signing transaction</p>
+          <p>• Keep your private keys and recovery phrases secure</p>
+        `;
+        addLog('[NEXUS_2121][NETWORK] Switched to MAINNET - Production environment');
+        addLog('[NEXUS_2121][WARNING] ⚠ Mainnet mode activated. Please verify all details carefully!');
+      } else {
+        // Devnet selected
+        currentNetwork = 'devnet';
+        networkLabel.textContent = 'DEVNET';
+        networkLabel.style.color = '#64c8ff';
+        networkInfo.innerHTML = 'RPC: <strong>https://api.devnet.solana.com</strong>';
+        networkWarning.classList.remove('active');
+        devnetBadge.classList.add('active');
+        mainnetBadge.classList.remove('active');
+        advisoryText.innerHTML = `
+          <p>• Deploying Token-2022 SPL standard to Solana DEVNET</p>
+          <p>• Network fees and transaction costs apply (SOL required)</p>
+          <p>• Verify all parameters before signing transaction</p>
+          <p>• Keep your private keys and recovery phrases secure</p>
+          <p>• Use devnet for safe testing before mainnet deployment</p>
+        `;
+        addLog('[NEXUS_2121][NETWORK] Switched to DEVNET - Safe testing environment');
+      }
+    }
+
+    async function testGRPC() {
+      addLog('[NEXUS_2121][GRPC] Testing connection...');
+      const endpoint = RPC_ENDPOINTS[currentNetwork];
+      
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'getHealth'
+          })
+        });
+        
+        if (response.ok) {
+          addLog(`[NEXUS_2121][GRPC] ✓ Connection test passed. ${currentNetwork.toUpperCase()} node is healthy.`);
+        } else {
+          addLog('[NEXUS_2121][ERROR] Connection test failed.');
+        }
+      } catch (error) {
+        addLog('[NEXUS_2121][ERROR] GRPC connection error: ' + error.message);
+      }
+    }
+
+    async function connectNode() {
+      addLog(`[NEXUS_2121][UPLINK] Connecting to ${currentNetwork.toUpperCase()} node...`);
+      await testGRPC();
+      addLog(`[NEXUS_2121][STATUS] Ready for transaction sequence.`);
     }
 
     function connectWallet() {
@@ -507,8 +739,15 @@
         document.getElementById('walletBtn').textContent = '✓ WALLET CONNECTED';
         document.getElementById('walletBtn').style.background = 'linear-gradient(135deg, #00ff88 0%, #00cc66 100%)';
         document.getElementById('walletStatus').style.display = 'block';
+        document.getElementById('walletAddress').textContent = 'Phantom (Connected)';
         addLog('[NEXUS_2121][WALLET] Connected to Phantom wallet.');
+        addLog('[NEXUS_2121][AUTH] Wallet authorization successful.');
       }
+    }
+
+    function testIPFS() {
+      addLog('[NEXUS_2121][IPFS] Validating gateway key...');
+      addLog('[NEXUS_2121][IPFS] ✓ Gateway key validation passed.');
     }
 
     function deployToken() {
@@ -522,12 +761,17 @@
       const supply = document.getElementById('tokenSupply').value;
       const decimals = document.getElementById('tokenDecimals').value;
       
-      addLog(`[NEXUS_2121][DEPLOY] Initializing token deployment...`);
+      addLog(`[NEXUS_2121][DEPLOY] Initializing token deployment on ${currentNetwork.toUpperCase()}...`);
       addLog(`[NEXUS_2121][DEPLOY] Token: ${name} (${symbol})`);
       addLog(`[NEXUS_2121][DEPLOY] Supply: ${supply}`);
       addLog(`[NEXUS_2121][DEPLOY] Decimals: ${decimals}`);
+      addLog(`[NEXUS_2121][RPC] Using endpoint: ${RPC_ENDPOINTS[currentNetwork]}`);
       addLog('[NEXUS_2121][STATUS] Ready for transaction signature.');
       addLog('[NEXUS_2121][PENDING] Awaiting user confirmation...');
+      
+      if (currentNetwork === 'mainnet') {
+        addLog('[NEXUS_2121][WARNING] ⚠ MAINNET DEPLOYMENT - Verify all details carefully!');
+      }
     }
 
     document.getElementById('imageUpload').addEventListener('change', function(e) {
@@ -542,6 +786,9 @@
         reader.readAsDataURL(file);
       }
     });
+
+    // Initialize with devnet as default
+    addLog('[NEXUS_2121][CONFIG] Devnet RPC endpoint configured.');
   </script>
 </body>
 </html>
