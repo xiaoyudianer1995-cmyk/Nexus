@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS LAUNCHPAD 2121</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0a0e1a 0%, #1a0e2e 50%, #16213e 100%);
+      color: #00fff7;
+      font-family: 'IBM Plex Mono', monospace;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* Animated background grid */
+    .bg-grid {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        linear-gradient(0deg, transparent 24%, rgba(0, 255, 247, 0.05) 25%, rgba(0, 255, 247, 0.05) 26%, transparent 27%, transparent 74%, rgba(0, 255, 247, 0.05) 75%, rgba(0, 255, 247, 0.05) 76%, transparent 77%, transparent),
+        linear-gradient(90deg, transparent 24%, rgba(0, 255, 247, 0.05) 25%, rgba(0, 255, 247, 0.05) 26%, transparent 27%, transparent 74%, rgba(0, 255, 247, 0.05) 75%, rgba(0, 255, 247, 0.05) 76%, transparent 77%, transparent);
+      background-size: 50px 50px;
+      z-index: 0;
+      pointer-events: none;
+      animation: grid-move 20s linear infinite;
+    }
+
+    @keyframes grid-move {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(50px); }
+    }
+
+    .neon-cyan {
+      color: #00fff7;
+      text-shadow: 0 0 10px #00fff7, 0 0 20px #00a8cc;
+    }
+
+    .neon-violet {
+      color: #e400ff;
+      text-shadow: 0 0 10px #e400ff, 0 0 20px #a000cc;
+    }
+
+    .glass-panel {
+      background: rgba(20, 30, 50, 0.6);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(0, 255, 247, 0.2);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .glass-panel::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #00fff7, transparent);
+      animation: shimmer 3s ease-in-out infinite;
+    }
+
+    @keyframes shimmer {
+      0%, 100% { opacity: 0; }
+      50% { opacity: 1; }
+    }
+
+    .glass-panel:hover {
+      border-color: rgba(0, 255, 247, 0.5);
+      box-shadow: 0 0 30px rgba(0, 255, 247, 0.2), inset 0 0 30px rgba(0, 255, 247, 0.05);
+    }
+
+    input, textarea, select {
+      background: rgba(10, 20, 40, 0.8);
+      border: 1px solid rgba(0, 255, 247, 0.3);
+      border-radius: 8px;
+      color: #00fff7;
+      padding: 12px 16px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      width: 100%;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: #00fff7;
+      box-shadow: 0 0 20px rgba(0, 255, 247, 0.3), inset 0 0 10px rgba(0, 255, 247, 0.1);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #00fff7 0%, #0099cc 100%);
+      color: #0a0e1a;
+      border: none;
+      padding: 12px 32px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-family: 'Space Mono', monospace;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 20px rgba(0, 255, 247, 0.4);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 12px;
+      width: 100%;
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 0 40px rgba(0, 255, 247, 0.8), 0 0 60px rgba(0, 255, 247, 0.5);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: rgba(0, 255, 247, 0.1);
+      color: #00fff7;
+      border: 1px solid #00fff7;
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-family: 'Space Mono', monospace;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 11px;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(0, 255, 247, 0.2);
+      box-shadow: 0 0 20px rgba(0, 255, 247, 0.4);
+    }
+
+    .console {
+      background: rgba(5, 10, 20, 0.9);
+      border: 1px solid rgba(0, 255, 247, 0.3);
+      border-radius: 8px;
+      padding: 16px;
+      height: 200px;
+      overflow-y: auto;
+      font-size: 12px;
+      line-height: 1.6;
+      font-family: 'Space Mono', monospace;
+      position: relative;
+    }
+
+    .console::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        repeating-linear-gradient(
+          0deg,
+          rgba(0, 255, 247, 0.03),
+          rgba(0, 255, 247, 0.03) 1px,
+          transparent 1px,
+          transparent 2px
+        );
+      pointer-events: none;
+      animation: scanlines 8s linear infinite;
+    }
+
+    @keyframes scanlines {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(2px); }
+    }
+
+    .console-line {
+      margin: 4px 0;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .console-success {
+      color: #00ff88;
+    }
+
+    .console-error {
+      color: #ff0055;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 255, 247, 0.05);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(0, 255, 247, 0.3);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 255, 247, 0.6);
+    }
+
+    label {
+      display: block;
+      color: #00fff7;
+      font-size: 12px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 600;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 768px) {
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .section-label {
+      color: #e400ff;
+      font-size: 13px;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 700;
+    }
+
+    .neon-line-top {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #00fff7, #e400ff, transparent);
+      box-shadow: 0 0 30px rgba(0, 255, 247, 0.6);
+      z-index: 100;
+    }
+
+    .neon-line-bottom {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #e400ff, #00fff7, transparent);
+      box-shadow: 0 0 30px rgba(0, 255, 247, 0.6);
+      z-index: 100;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 24px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 64px;
+    }
+
+    .header h1 {
+      font-size: clamp(36px, 8vw, 72px);
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+      margin: 0;
+      line-height: 1.1;
+      letter-spacing: 2px;
+    }
+
+    .header-divider {
+      width: 120px;
+      height: 2px;
+      background: linear-gradient(90deg, #00fff7, #e400ff);
+      margin: 24px auto;
+      box-shadow: 0 0 20px rgba(0, 255, 247, 0.5);
+    }
+
+    .header .subtitle {
+      color: #00a8cc;
+      font-size: 12px;
+      letter-spacing: 3px;
+      margin-top: 16px;
+      text-transform: uppercase;
+    }
+
+    textarea {
+      resize: none;
+      min-height: 100px;
+    }
+
+    .flex-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .flex-1 {
+      flex: 1;
+    }
+
+    .image-preview {
+      background: rgba(10, 20, 40, 0.8);
+      border: 1px solid rgba(0, 255, 247, 0.3);
+      border-radius: 8px;
+      padding: 32px;
+      text-align: center;
+      margin-bottom: 12px;
+      min-height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .image-preview img {
+      width: 100px;
+      height: 100px;
+      border-radius: 8px;
+    }
+
+    .mt-16 { margin-top: 16px; }
+    .mb-16 { margin-bottom: 16px; }
+    .mt-24 { margin-top: 24px; }
+  </style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="neon-line-top"></div>
+  <div class="neon-line-bottom"></div>
+
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>
+        <span class="neon-cyan">NEXUS</span><br>
+        <span class="neon-violet">LAUNCHPAD</span>
+      </h1>
+      <div class="header-divider"></div>
+      <p class="subtitle">Precision Token Deployment System</p>
+      <p style="color: #0099cc; font-size: 11px; margin-top: 8px; letter-spacing: 2px;">YEAR 2121</p>
+    </div>
+
+    <!-- Node Uplink -->
+    <div class="glass-panel">
+      <div class="section-label">// NODE UPLINK</div>
+      
+      <label>Target Network</label>
+      <select id="network" style="margin-bottom: 16px;">
+        <option value="devnet">Devnet (Staging)</option>
+        <option value="testnet">Testnet</option>
+        <option value="mainnet">Mainnet</option>
+      </select>
+
+      <label>GRPC Endpoint (Yellowstone)</label>
+      <div class="flex-row mb-16">
+        <input type="text" placeholder="grpc.nexus2121.io:443" class="flex-1">
+        <button class="btn-secondary" onclick="addLog('[NEXUS_2121][GRPC] Connection test passed.')">Test</button>
+      </div>
+
+      <button class="btn-primary" onclick="connectNode()">Connect Node</button>
+    </div>
+
+    <!-- Wallet Identity -->
+    <div class="glass-panel">
+      <div class="section-label">// IDENTITY</div>
+      
+      <label>Authorized Wallet</label>
+      <button class="btn-primary" id="walletBtn" onclick="connectWallet()">CONNECT WALLET</button>
+      
+      <div id="walletStatus" style="margin-top: 12px; font-size: 12px; color: #00ff88; display: none;">
+        Status: <strong>Active</strong>
+      </div>
+    </div>
+
+    <!-- Core Parameters -->
+    <div class="glass-panel">
+      <div class="section-label">// CORE PARAMETERS</div>
+
+      <div class="grid-2">
+        <div>
+          <label>Token Name</label>
+          <input type="text" id="tokenName" value="NEXUS ASSET">
+        </div>
+        <div>
+          <label>Symbol</label>
+          <input type="text" id="tokenSymbol" value="NXS">
+        </div>
+      </div>
+
+      <label class="mt-16">Protocol Summary</label>
+      <textarea id="tokenDesc">Next-generation token powered by Solana</textarea>
+
+      <label class="mt-16">Visual Identity</label>
+      <div class="image-preview" id="imagePreview">
+        <div style="color: #0099cc; font-size: 14px;">Click below to upload image</div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+        <button class="btn-secondary" style="width: 100%;">Gallery</button>
+        <label for="imageUpload" class="btn-secondary" style="width: 100%; cursor: pointer; margin: 0; display: flex; align-items: center; justify-content: center;">
+          Upload
+        </label>
+        <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <label>Total Issuance</label>
+          <input type="text" id="tokenSupply" value="1000000000">
+        </div>
+        <div>
+          <label>Precision (Decimals)</label>
+          <select id="tokenDecimals">
+            <option value="6">6 Decimals</option>
+            <option value="8">8 Decimals</option>
+            <option value="9" selected>9 Decimals</option>
+            <option value="18">18 Decimals</option>
+          </select>
+        </div>
+      </div>
+
+      <label class="mt-16">IPFS Gateway Key (Optional)</label>
+      <div class="flex-row mb-16">
+        <input type="password" placeholder="NFT.STORAGE_KEY" class="flex-1">
+        <button class="btn-secondary" onclick="addLog('[NEXUS_2121][IPFS] Key validation passed.')">Test</button>
+      </div>
+
+      <button class="btn-primary" onclick="deployToken()">Deploy Token</button>
+    </div>
+
+    <!-- Protocol Advisory -->
+    <div class="glass-panel">
+      <div class="section-label">// PROTOCOL ADVISORY</div>
+      
+      <div style="font-size: 12px; line-height: 1.8; color: #00a8cc;">
+        <p>• Deploying Token-2022 SPL standard to Solana blockchain</p>
+        <p>• Network fees and transaction costs apply (SOL required)</p>
+        <p>• Verify all parameters before signing transaction</p>
+        <p>• Keep your private keys and recovery phrases secure</p>
+        <p>• No admin privileges after deployment unless specified</p>
+      </div>
+    </div>
+
+    <!-- System Console -->
+    <div class="glass-panel">
+      <div class="section-label">// SYSTEM CONSOLE OUTPUT</div>
+      
+      <div class="console" id="console">
+        <div class="console-line">[NEXUS_2121][INIT] System core activated...</div>
+        <div class="console-line">[NEXUS_2121][SCAN] Running diagnostic check...</div>
+        <div class="console-line">[NEXUS_2121][OK] All systems nominal.</div>
+      </div>
+      
+      <div style="font-size: 11px; color: #0099cc; margin-top: 12px; text-align: right;" id="consoleCount">
+        3 entries • Real-time monitoring active
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let walletConnected = false;
+
+    function addLog(message) {
+      const console = document.getElementById('console');
+      const line = document.createElement('div');
+      line.className = 'console-line';
+      line.textContent = message;
+      console.appendChild(line);
+      console.scrollTop = console.scrollHeight;
+      
+      const count = console.querySelectorAll('.console-line').length;
+      document.getElementById('consoleCount').textContent = count + ' entries • Real-time monitoring active';
+    }
+
+    function connectNode() {
+      const network = document.getElementById('network').value;
+      addLog(`[NEXUS_2121][UPLINK] Connected to ${network} node.`);
+      addLog('[NEXUS_2121][STATUS] Node health check passed.');
+    }
+
+    function connectWallet() {
+      if (!walletConnected) {
+        walletConnected = true;
+        document.getElementById('walletBtn').textContent = '✓ WALLET CONNECTED';
+        document.getElementById('walletBtn').style.background = 'linear-gradient(135deg, #00ff88 0%, #00cc66 100%)';
+        document.getElementById('walletStatus').style.display = 'block';
+        addLog('[NEXUS_2121][WALLET] Connected to Phantom wallet.');
+      }
+    }
+
+    function deployToken() {
+      if (!walletConnected) {
+        addLog('[NEXUS_2121][ERROR] Wallet not connected. Please connect wallet first.');
+        return;
+      }
+      
+      const name = document.getElementById('tokenName').value;
+      const symbol = document.getElementById('tokenSymbol').value;
+      const supply = document.getElementById('tokenSupply').value;
+      const decimals = document.getElementById('tokenDecimals').value;
+      
+      addLog(`[NEXUS_2121][DEPLOY] Initializing token deployment...`);
+      addLog(`[NEXUS_2121][DEPLOY] Token: ${name} (${symbol})`);
+      addLog(`[NEXUS_2121][DEPLOY] Supply: ${supply}`);
+      addLog(`[NEXUS_2121][DEPLOY] Decimals: ${decimals}`);
+      addLog('[NEXUS_2121][STATUS] Ready for transaction signature.');
+      addLog('[NEXUS_2121][PENDING] Awaiting user confirmation...');
+    }
+
+    document.getElementById('imageUpload').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const preview = document.getElementById('imagePreview');
+          preview.innerHTML = `<img src="${event.target.result}" alt="Token">`;
+          addLog(`[NEXUS_2121][ASSET] Image uploaded: ${file.name}`);
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  </script>
+</body>
+</html>
