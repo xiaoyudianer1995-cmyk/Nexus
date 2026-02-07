@@ -192,14 +192,6 @@
       to { opacity: 1; }
     }
 
-    .console-success {
-      color: #00ff88;
-    }
-
-    .console-error {
-      color: #ff0055;
-    }
-
     ::-webkit-scrollbar {
       width: 8px;
     }
@@ -472,6 +464,177 @@
       box-shadow: 0 0 20px currentColor;
       border-color: currentColor;
     }
+
+    /* Wallet Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(10, 14, 26, 0.8);
+      backdrop-filter: blur(5px);
+      animation: fadeIn 0.3s ease;
+    }
+
+    .modal.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: linear-gradient(135deg, rgba(20, 30, 50, 0.95) 0%, rgba(30, 20, 60, 0.95) 100%);
+      border: 1px solid rgba(0, 255, 247, 0.3);
+      border-radius: 16px;
+      padding: 32px;
+      max-width: 500px;
+      width: 90%;
+      position: relative;
+      box-shadow: 0 0 60px rgba(0, 255, 247, 0.3);
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(50px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      font-size: 28px;
+      font-weight: bold;
+      color: #00fff7;
+      cursor: pointer;
+      border: none;
+      background: none;
+      transition: all 0.3s ease;
+    }
+
+    .close-btn:hover {
+      color: #e400ff;
+      transform: rotate(90deg);
+    }
+
+    .modal-title {
+      color: #00fff7;
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .modal-subtitle {
+      color: #0099cc;
+      font-size: 12px;
+      margin-bottom: 24px;
+    }
+
+    .wallet-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 480px) {
+      .wallet-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .wallet-btn {
+      background: rgba(0, 255, 247, 0.1);
+      border: 1px solid rgba(0, 255, 247, 0.3);
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: #00fff7;
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .wallet-btn:hover {
+      background: rgba(0, 255, 247, 0.2);
+      border-color: #00fff7;
+      box-shadow: 0 0 20px rgba(0, 255, 247, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .wallet-icon {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .wallet-status {
+      margin-top: 16px;
+      padding: 12px;
+      background: rgba(0, 255, 247, 0.05);
+      border: 1px solid rgba(0, 255, 247, 0.2);
+      border-radius: 8px;
+      font-size: 11px;
+      color: #0099cc;
+      text-align: center;
+    }
+
+    .wallet-connected {
+      background: rgba(0, 255, 136, 0.1);
+      border-color: rgba(0, 255, 136, 0.3);
+      color: #00ff88;
+    }
+
+    .wallet-address {
+      color: #00fff7;
+      font-weight: 700;
+      word-break: break-all;
+      font-size: 10px;
+      margin-top: 8px;
+    }
+
+    .disconnect-btn {
+      margin-top: 16px;
+      background: rgba(255, 0, 85, 0.1);
+      border: 1px solid rgba(255, 0, 85, 0.3);
+      color: #ff0055;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      transition: all 0.3s ease;
+      width: 100%;
+    }
+
+    .disconnect-btn:hover {
+      background: rgba(255, 0, 85, 0.2);
+      border-color: #ff0055;
+      box-shadow: 0 0 15px rgba(255, 0, 85, 0.3);
+    }
   </style>
 </head>
 <body>
@@ -540,10 +703,64 @@
       <div class="section-label">// IDENTITY</div>
       
       <label>Authorized Wallet</label>
-      <button class="btn-primary" id="walletBtn" onclick="connectWallet()">CONNECT WALLET</button>
+      <button class="btn-primary" id="walletBtn" onclick="openWalletModal()">CONNECT WALLET</button>
       
       <div id="walletStatus" style="margin-top: 12px; font-size: 12px; color: #00ff88; display: none;">
-        Status: <strong>Active</strong> | Wallet: <span id="walletAddress">Phantom</span>
+        <div>Status: <strong>✓ Connected</strong></div>
+        <div style="color: #00fff7; margin-top: 8px;">Wallet: <span id="walletName" style="font-weight: bold;">Phantom</span></div>
+        <div style="color: #0099cc; margin-top: 4px; word-break: break-all; font-size: 10px;">
+          Address: <span id="walletAddress"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Wallet Modal -->
+    <div id="walletModal" class="modal">
+      <div class="modal-content">
+        <button class="close-btn" onclick="closeWalletModal()">&times;</button>
+        
+        <div class="modal-title">Select Wallet</div>
+        <div class="modal-subtitle">Choose your preferred Solana wallet to connect</div>
+
+        <div class="wallet-grid">
+          <button class="wallet-btn" onclick="connectPhantom()">
+            <div class="wallet-icon">👻</div>
+            <span>Phantom</span>
+            <small style="font-size: 10px; opacity: 0.7;">Desktop & Mobile</small>
+          </button>
+          
+          <button class="wallet-btn" onclick="connectSolflare()">
+            <div class="wallet-icon">🌟</div>
+            <span>Solflare</span>
+            <small style="font-size: 10px; opacity: 0.7;">Desktop & Mobile</small>
+          </button>
+          
+          <button class="wallet-btn" onclick="connectMagicEden()">
+            <div class="wallet-icon">✨</div>
+            <span>Magic Eden</span>
+            <small style="font-size: 10px; opacity: 0.7;">Mobile</small>
+          </button>
+          
+          <button class="wallet-btn" onclick="connectBackpack()">
+            <div class="wallet-icon">🎒</div>
+            <span>Backpack</span>
+            <small style="font-size: 10px; opacity: 0.7;">Desktop & Mobile</small>
+          </button>
+        </div>
+
+        <div class="wallet-status" id="walletStatusModal">
+          Click on a wallet to connect. Ensure the wallet extension is installed in your browser.
+        </div>
+
+        <div id="connectedWalletInfo" style="display: none;">
+          <div class="wallet-connected">
+            <div style="margin-bottom: 8px;">✓ Wallet Connected Successfully</div>
+            <div class="wallet-address">
+              <span id="connectedAddress"></span>
+            </div>
+          </div>
+          <button class="disconnect-btn" onclick="disconnectWallet()">Disconnect Wallet</button>
+        </div>
       </div>
     </div>
 
@@ -642,6 +859,8 @@
 
     let walletConnected = false;
     let currentNetwork = 'devnet';
+    let connectedWallet = null;
+    let connectedAddress = null;
 
     function addLog(message) {
       const console = document.getElementById('console');
@@ -665,7 +884,6 @@
       const advisoryText = document.getElementById('advisoryText');
 
       if (toggle) {
-        // Mainnet selected
         currentNetwork = 'mainnet';
         networkLabel.textContent = 'MAINNET';
         networkLabel.style.color = '#e400ff';
@@ -683,7 +901,6 @@
         addLog('[NEXUS_2121][NETWORK] Switched to MAINNET - Production environment');
         addLog('[NEXUS_2121][WARNING] ⚠ Mainnet mode activated. Please verify all details carefully!');
       } else {
-        // Devnet selected
         currentNetwork = 'devnet';
         networkLabel.textContent = 'DEVNET';
         networkLabel.style.color = '#64c8ff';
@@ -700,6 +917,145 @@
         `;
         addLog('[NEXUS_2121][NETWORK] Switched to DEVNET - Safe testing environment');
       }
+    }
+
+    function openWalletModal() {
+      document.getElementById('walletModal').classList.add('show');
+      addLog('[NEXUS_2121][WALLET] Opening wallet connection dialog...');
+    }
+
+    function closeWalletModal() {
+      document.getElementById('walletModal').classList.remove('show');
+    }
+
+    // Simulated wallet connections
+    async function connectPhantom() {
+      addLog('[NEXUS_2121][WALLET] Attempting to connect Phantom wallet...');
+      
+      // Check if Phantom is installed
+      if (!window.solana) {
+        addLog('[NEXUS_2121][ERROR] Phantom wallet not detected. Installing extension required.');
+        document.getElementById('walletStatusModal').innerHTML = '❌ Phantom wallet not found. <a href="https://phantom.app/" target="_blank" style="color: #00fff7; text-decoration: underline;">Install Phantom</a>';
+        return;
+      }
+
+      try {
+        // Request connection to Phantom
+        const response = await window.solana.connect();
+        connectedWallet = 'Phantom';
+        connectedAddress = response.publicKey.toString();
+        walletConnected = true;
+        
+        updateWalletUI();
+        addLog(`[NEXUS_2121][WALLET] ✓ Connected to Phantom wallet`);
+        addLog(`[NEXUS_2121][WALLET] Address: ${connectedAddress}`);
+      } catch (error) {
+        addLog(`[NEXUS_2121][ERROR] Phantom connection failed: ${error.message}`);
+      }
+    }
+
+    async function connectSolflare() {
+      addLog('[NEXUS_2121][WALLET] Attempting to connect Solflare wallet...');
+      
+      if (!window.solflare) {
+        addLog('[NEXUS_2121][ERROR] Solflare wallet not detected.');
+        document.getElementById('walletStatusModal').innerHTML = '❌ Solflare wallet not found. <a href="https://solflare.com/" target="_blank" style="color: #00fff7; text-decoration: underline;">Install Solflare</a>';
+        return;
+      }
+
+      try {
+        const response = await window.solflare.connect();
+        connectedWallet = 'Solflare';
+        connectedAddress = response.publicKey.toString();
+        walletConnected = true;
+        
+        updateWalletUI();
+        addLog(`[NEXUS_2121][WALLET] ✓ Connected to Solflare wallet`);
+        addLog(`[NEXUS_2121][WALLET] Address: ${connectedAddress}`);
+      } catch (error) {
+        addLog(`[NEXUS_2121][ERROR] Solflare connection failed: ${error.message}`);
+      }
+    }
+
+    async function connectMagicEden() {
+      addLog('[NEXUS_2121][WALLET] Attempting to connect Magic Eden wallet...');
+      
+      if (!window.magicEden) {
+        addLog('[NEXUS_2121][ERROR] Magic Eden wallet not detected.');
+        document.getElementById('walletStatusModal').innerHTML = '❌ Magic Eden wallet not found. <a href="https://www.magiceden.io/wallet" target="_blank" style="color: #00fff7; text-decoration: underline;">Install Magic Eden</a>';
+        return;
+      }
+
+      try {
+        await window.magicEden.request({ method: 'connect' });
+        const response = await window.magicEden.request({ method: 'getAccount' });
+        connectedWallet = 'Magic Eden';
+        connectedAddress = response;
+        walletConnected = true;
+        
+        updateWalletUI();
+        addLog(`[NEXUS_2121][WALLET] ✓ Connected to Magic Eden wallet`);
+        addLog(`[NEXUS_2121][WALLET] Address: ${connectedAddress}`);
+      } catch (error) {
+        addLog(`[NEXUS_2121][ERROR] Magic Eden connection failed: ${error.message}`);
+      }
+    }
+
+    async function connectBackpack() {
+      addLog('[NEXUS_2121][WALLET] Attempting to connect Backpack wallet...');
+      
+      if (!window.backpack) {
+        addLog('[NEXUS_2121][ERROR] Backpack wallet not detected.');
+        document.getElementById('walletStatusModal').innerHTML = '❌ Backpack wallet not found. <a href="https://backpack.app/" target="_blank" style="color: #00fff7; text-decoration: underline;">Install Backpack</a>';
+        return;
+      }
+
+      try {
+        const response = await window.backpack.connect();
+        connectedWallet = 'Backpack';
+        connectedAddress = response.publicKey.toString();
+        walletConnected = true;
+        
+        updateWalletUI();
+        addLog(`[NEXUS_2121][WALLET] ✓ Connected to Backpack wallet`);
+        addLog(`[NEXUS_2121][WALLET] Address: ${connectedAddress}`);
+      } catch (error) {
+        addLog(`[NEXUS_2121][ERROR] Backpack connection failed: ${error.message}`);
+      }
+    }
+
+    function updateWalletUI() {
+      // Hide wallet selection, show connected info
+      document.querySelector('.wallet-grid').style.display = 'none';
+      document.getElementById('walletStatusModal').style.display = 'none';
+      document.getElementById('connectedWalletInfo').style.display = 'block';
+      document.getElementById('connectedAddress').textContent = connectedAddress;
+
+      // Update main wallet button
+      document.getElementById('walletBtn').textContent = '✓ WALLET CONNECTED';
+      document.getElementById('walletBtn').style.background = 'linear-gradient(135deg, #00ff88 0%, #00cc66 100%)';
+      document.getElementById('walletStatus').style.display = 'block';
+      document.getElementById('walletName').textContent = connectedWallet;
+      document.getElementById('walletAddress').textContent = connectedAddress;
+    }
+
+    function disconnectWallet() {
+      walletConnected = false;
+      connectedWallet = null;
+      connectedAddress = null;
+
+      // Reset UI
+      document.querySelector('.wallet-grid').style.display = 'grid';
+      document.getElementById('walletStatusModal').style.display = 'block';
+      document.getElementById('walletStatusModal').innerHTML = 'Click on a wallet to connect. Ensure the wallet extension is installed in your browser.';
+      document.getElementById('connectedWalletInfo').style.display = 'none';
+
+      // Reset main button
+      document.getElementById('walletBtn').textContent = 'CONNECT WALLET';
+      document.getElementById('walletBtn').style.background = 'linear-gradient(135deg, #00fff7 0%, #0099cc 100%)';
+      document.getElementById('walletStatus').style.display = 'none';
+
+      addLog('[NEXUS_2121][WALLET] Wallet disconnected');
     }
 
     async function testGRPC() {
@@ -733,18 +1089,6 @@
       addLog(`[NEXUS_2121][STATUS] Ready for transaction sequence.`);
     }
 
-    function connectWallet() {
-      if (!walletConnected) {
-        walletConnected = true;
-        document.getElementById('walletBtn').textContent = '✓ WALLET CONNECTED';
-        document.getElementById('walletBtn').style.background = 'linear-gradient(135deg, #00ff88 0%, #00cc66 100%)';
-        document.getElementById('walletStatus').style.display = 'block';
-        document.getElementById('walletAddress').textContent = 'Phantom (Connected)';
-        addLog('[NEXUS_2121][WALLET] Connected to Phantom wallet.');
-        addLog('[NEXUS_2121][AUTH] Wallet authorization successful.');
-      }
-    }
-
     function testIPFS() {
       addLog('[NEXUS_2121][IPFS] Validating gateway key...');
       addLog('[NEXUS_2121][IPFS] ✓ Gateway key validation passed.');
@@ -766,6 +1110,7 @@
       addLog(`[NEXUS_2121][DEPLOY] Supply: ${supply}`);
       addLog(`[NEXUS_2121][DEPLOY] Decimals: ${decimals}`);
       addLog(`[NEXUS_2121][RPC] Using endpoint: ${RPC_ENDPOINTS[currentNetwork]}`);
+      addLog(`[NEXUS_2121][AUTH] Using wallet: ${connectedWallet}`);
       addLog('[NEXUS_2121][STATUS] Ready for transaction signature.');
       addLog('[NEXUS_2121][PENDING] Awaiting user confirmation...');
       
@@ -787,7 +1132,15 @@
       }
     });
 
-    // Initialize with devnet as default
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+      const modal = document.getElementById('walletModal');
+      if (event.target == modal) {
+        closeWalletModal();
+      }
+    }
+
+    // Initialize
     addLog('[NEXUS_2121][CONFIG] Devnet RPC endpoint configured.');
   </script>
 </body>
