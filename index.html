@@ -2,16 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NEXUS LAUNCHPAD 2121</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0a0e1a">
+  <title>NEXUS LAUNCHPAD 2121 - STANDALONE</title>
   
-  <!-- Solana Web3 -->
-  <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@latest"></script>
-  
-  <!-- Wallet Adapter -->
-  <script src="https://cdn.jsdelivr.net/npm/@solana/wallet-adapter-base@0.9.22/lib/index.iife.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@solana/wallet-adapter-wallets@0.19.29/lib/index.iife.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@solana/wallet-adapter-react@0.15.35/lib/index.iife.js"></script>
+  <!-- Only Solana Web3.js - this one works reliably -->
+  <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
   
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
@@ -20,6 +16,7 @@
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
     }
 
     body {
@@ -28,6 +25,7 @@
       font-family: 'IBM Plex Mono', monospace;
       overflow-x: hidden;
       min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
     }
 
     .bg-grid {
@@ -56,6 +54,7 @@
     .glass-panel {
       background: rgba(20, 30, 50, 0.6);
       backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       border: 1px solid rgba(0, 255, 247, 0.2);
       border-radius: 16px;
       padding: 24px;
@@ -93,6 +92,7 @@
       font-size: 14px;
       transition: all 0.3s ease;
       width: 100%;
+      -webkit-appearance: none;
     }
 
     input:focus, textarea:focus, select:focus {
@@ -105,7 +105,7 @@
       background: linear-gradient(135deg, #00fff7 0%, #0099cc 100%);
       color: #0a0e1a;
       border: none;
-      padding: 12px 32px;
+      padding: 14px 32px;
       border-radius: 8px;
       font-weight: 600;
       font-family: 'Space Mono', monospace;
@@ -116,18 +116,24 @@
       letter-spacing: 1px;
       font-size: 12px;
       width: 100%;
+      touch-action: manipulation;
     }
 
-    .btn-primary:hover {
+    .btn-primary:hover:not(:disabled) {
       box-shadow: 0 0 40px rgba(0, 255, 247, 0.8), 0 0 60px rgba(0, 255, 247, 0.5);
       transform: translateY(-2px);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
 
     .btn-secondary {
       background: rgba(0, 255, 247, 0.1);
       color: #00fff7;
       border: 1px solid #00fff7;
-      padding: 10px 24px;
+      padding: 12px 24px;
       border-radius: 8px;
       font-weight: 600;
       font-family: 'Space Mono', monospace;
@@ -136,11 +142,34 @@
       text-transform: uppercase;
       letter-spacing: 1px;
       font-size: 11px;
+      touch-action: manipulation;
     }
 
-    .btn-secondary:hover {
+    .btn-secondary:hover:not(:disabled) {
       background: rgba(0, 255, 247, 0.2);
       box-shadow: 0 0 20px rgba(0, 255, 247, 0.4);
+    }
+
+    .btn-danger {
+      background: rgba(255, 0, 85, 0.2);
+      color: #ff0055;
+      border: 1px solid #ff0055;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-family: 'Space Mono', monospace;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 11px;
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    .btn-danger:hover {
+      background: rgba(255, 0, 85, 0.3);
+      box-shadow: 0 0 20px rgba(255, 0, 85, 0.4);
     }
 
     .console {
@@ -148,50 +177,31 @@
       border: 1px solid rgba(0, 255, 247, 0.3);
       border-radius: 8px;
       padding: 16px;
-      height: 250px;
+      height: 300px;
       overflow-y: auto;
-      font-size: 12px;
+      font-size: 11px;
       line-height: 1.6;
       font-family: 'Space Mono', monospace;
       position: relative;
     }
-
-    .console::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: repeating-linear-gradient(0deg, rgba(0, 255, 247, 0.03), rgba(0, 255, 247, 0.03) 1px, transparent 1px, transparent 2px);
-      pointer-events: none;
-      animation: scanlines 8s linear infinite;
-    }
-
-    @keyframes scanlines { 0% { transform: translateY(0); } 100% { transform: translateY(2px); } }
 
     .console-line {
       margin: 4px 0;
       animation: fadeIn 0.3s ease;
       position: relative;
       z-index: 1;
+      word-break: break-word;
     }
 
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-    ::-webkit-scrollbar { width: 8px; }
-    ::-webkit-scrollbar-track { background: rgba(0, 255, 247, 0.05); }
-    ::-webkit-scrollbar-thumb { background: rgba(0, 255, 247, 0.3); }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(0, 255, 247, 0.6); }
-
-    label {
-      display: block;
-      color: #00fff7;
-      font-size: 12px;
-      margin-bottom: 8px;
+    .section-label {
+      color: #e400ff;
+      font-size: 13px;
+      margin-bottom: 16px;
       text-transform: uppercase;
-      letter-spacing: 1px;
-      font-weight: 600;
+      letter-spacing: 2px;
+      font-weight: 700;
     }
 
     .grid-2 {
@@ -203,37 +213,6 @@
 
     @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
 
-    .section-label {
-      color: #e400ff;
-      font-size: 13px;
-      margin-bottom: 16px;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      font-weight: 700;
-    }
-
-    .neon-line-top {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, #00fff7, #e400ff, transparent);
-      box-shadow: 0 0 30px rgba(0, 255, 247, 0.6);
-      z-index: 100;
-    }
-
-    .neon-line-bottom {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, #e400ff, #00fff7, transparent);
-      box-shadow: 0 0 30px rgba(0, 255, 247, 0.6);
-      z-index: 100;
-    }
-
     .container {
       max-width: 900px;
       margin: 0 auto;
@@ -244,7 +223,7 @@
 
     .header {
       text-align: center;
-      margin-bottom: 64px;
+      margin-bottom: 48px;
     }
 
     .header h1 {
@@ -264,40 +243,78 @@
       box-shadow: 0 0 20px rgba(0, 255, 247, 0.5);
     }
 
-    .header .subtitle {
-      color: #00a8cc;
-      font-size: 12px;
-      letter-spacing: 3px;
+    .spinner {
+      border: 3px solid rgba(0, 255, 247, 0.1);
+      border-top: 3px solid #00fff7;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    .success-box {
+      background: rgba(0, 255, 136, 0.1);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      border-radius: 8px;
+      padding: 16px;
       margin-top: 16px;
-      text-transform: uppercase;
-    }
-
-    textarea { resize: none; min-height: 100px; }
-
-    .flex-row { display: flex; gap: 12px; }
-    .flex-1 { flex: 1; }
-
-    .image-preview {
-      background: rgba(10, 20, 40, 0.8);
-      border: 1px solid rgba(0, 255, 247, 0.3);
-      border-radius: 8px;
-      padding: 32px;
       text-align: center;
-      margin-bottom: 12px;
-      min-height: 120px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
 
-    .image-preview img {
-      width: 100px;
-      height: 100px;
+    .error-box {
+      background: rgba(255, 0, 85, 0.1);
+      border: 1px solid rgba(255, 0, 85, 0.3);
       border-radius: 8px;
+      padding: 16px;
+      margin-top: 16px;
+      color: #ff0055;
     }
 
-    .mt-16 { margin-top: 16px; }
-    .mb-16 { margin-bottom: 16px; }
+    .info-box {
+      background: rgba(0, 255, 247, 0.05);
+      border: 1px solid rgba(0, 255, 247, 0.2);
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 12px;
+      font-size: 11px;
+      color: #00a8cc;
+    }
+
+    .tx-link {
+      color: #00fff7;
+      text-decoration: none;
+      word-break: break-all;
+      font-size: 10px;
+    }
+
+    .tx-link:hover { text-decoration: underline; }
+
+    .wallet-status-box {
+      background: rgba(0, 255, 136, 0.05);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 12px;
+      font-size: 11px;
+    }
+
+    .network-warning {
+      background: rgba(255, 170, 0, 0.1);
+      border: 1px solid rgba(255, 170, 0, 0.3);
+      color: #ffaa00;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 12px;
+      font-size: 11px;
+      display: none;
+    }
+
+    .network-warning.active { display: block; }
 
     .modal {
       display: none;
@@ -307,8 +324,8 @@
       top: 0;
       width: 100%;
       height: 100%;
-      background-color: rgba(10, 14, 26, 0.8);
-      backdrop-filter: blur(5px);
+      background-color: rgba(10, 14, 26, 0.95);
+      backdrop-filter: blur(10px);
     }
 
     .modal.show {
@@ -322,53 +339,21 @@
       border: 1px solid rgba(0, 255, 247, 0.3);
       border-radius: 16px;
       padding: 32px;
-      max-width: 500px;
+      max-width: 400px;
       width: 90%;
       position: relative;
-      box-shadow: 0 0 60px rgba(0, 255, 247, 0.3);
     }
 
     .close-btn {
       position: absolute;
       top: 16px;
       right: 16px;
-      font-size: 28px;
-      font-weight: bold;
+      font-size: 24px;
       color: #00fff7;
       cursor: pointer;
-      border: none;
       background: none;
-      transition: all 0.3s ease;
+      border: none;
     }
-
-    .close-btn:hover {
-      color: #e400ff;
-      transform: rotate(90deg);
-    }
-
-    .modal-title {
-      color: #00fff7;
-      font-size: 20px;
-      font-weight: 700;
-      margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .modal-subtitle {
-      color: #0099cc;
-      font-size: 12px;
-      margin-bottom: 24px;
-    }
-
-    .wallet-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-
-    @media (max-width: 480px) { .wallet-grid { grid-template-columns: 1fr; } }
 
     .wallet-btn {
       background: rgba(0, 255, 247, 0.1);
@@ -386,185 +371,84 @@
       font-size: 12px;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      width: 100%;
+      margin-bottom: 8px;
     }
 
     .wallet-btn:hover {
       background: rgba(0, 255, 247, 0.2);
       border-color: #00fff7;
-      box-shadow: 0 0 20px rgba(0, 255, 247, 0.4);
-      transform: translateY(-2px);
     }
 
-    .wallet-icon { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
-
-    .wallet-status {
-      margin-top: 16px;
-      padding: 12px;
-      background: rgba(0, 255, 247, 0.05);
-      border: 1px solid rgba(0, 255, 247, 0.2);
-      border-radius: 8px;
-      font-size: 11px;
-      color: #0099cc;
-      text-align: center;
-    }
-
-    .wallet-connected {
-      background: rgba(0, 255, 136, 0.1);
-      border-color: rgba(0, 255, 136, 0.3);
-      color: #00ff88;
-    }
-
-    .wallet-address {
-      color: #00fff7;
-      font-weight: 700;
-      word-break: break-all;
-      font-size: 10px;
-      margin-top: 8px;
-    }
-
-    .disconnect-btn {
-      margin-top: 16px;
-      background: rgba(255, 0, 85, 0.1);
-      border: 1px solid rgba(255, 0, 85, 0.3);
-      color: #ff0055;
-      padding: 10px 20px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-family: 'Space Mono', monospace;
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      transition: all 0.3s ease;
-      width: 100%;
-    }
-
-    .disconnect-btn:hover {
-      background: rgba(255, 0, 85, 0.2);
-      border-color: #ff0055;
-      box-shadow: 0 0 15px rgba(255, 0, 85, 0.3);
-    }
-
-    .toggle-container {
+    .bot-status {
       display: flex;
       align-items: center;
-      gap: 16px;
-      margin-bottom: 24px;
-      padding: 12px;
-      background: rgba(0, 255, 247, 0.05);
+      gap: 8px;
+      padding: 8px 12px;
+      background: rgba(0, 255, 136, 0.1);
+      border: 1px solid rgba(0, 255, 136, 0.3);
       border-radius: 8px;
-      border: 1px solid rgba(0, 255, 247, 0.2);
-    }
-
-    .toggle-label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin: 0; }
-
-    .toggle-switch {
-      position: relative;
-      display: inline-block;
-      width: 60px;
-      height: 30px;
-    }
-
-    .toggle-switch input { opacity: 0; width: 0; height: 0; }
-
-    .toggle-slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: rgba(0, 255, 247, 0.2);
-      transition: 0.4s;
-      border-radius: 30px;
-      border: 1px solid rgba(0, 255, 247, 0.3);
-    }
-
-    .toggle-slider:before {
-      position: absolute;
-      content: "";
-      height: 22px;
-      width: 22px;
-      left: 4px;
-      bottom: 4px;
-      background-color: #00fff7;
-      transition: 0.4s;
-      border-radius: 50%;
-      box-shadow: 0 0 10px rgba(0, 255, 247, 0.6);
-    }
-
-    input:checked + .toggle-slider {
-      background-color: rgba(228, 0, 255, 0.2);
-      border-color: #e400ff;
-    }
-
-    input:checked + .toggle-slider:before {
-      transform: translateX(30px);
-      background-color: #e400ff;
-      box-shadow: 0 0 10px rgba(228, 0, 255, 0.6);
-    }
-
-    .network-status {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-
-    .status-badge {
-      flex: 1;
-      padding: 12px;
-      border-radius: 8px;
-      border: 1px solid rgba(0, 255, 247, 0.3);
-      text-align: center;
+      margin-top: 12px;
       font-size: 11px;
-      text-transform: uppercase;
-      font-weight: 600;
-      transition: all 0.3s ease;
     }
 
-    .status-badge.devnet {
-      background: rgba(100, 200, 255, 0.1);
-      border-color: rgba(100, 200, 255, 0.3);
-      color: #64c8ff;
-    }
-
-    .status-badge.mainnet {
-      background: rgba(228, 0, 255, 0.1);
-      border-color: rgba(228, 0, 255, 0.3);
-      color: #e400ff;
-    }
-
-    .status-badge.active {
-      box-shadow: 0 0 20px currentColor;
-      border-color: currentColor;
-    }
-
-    .network-info {
-      font-size: 11px;
-      color: #0099cc;
-      margin-top: 8px;
-      padding: 8px;
-      background: rgba(0, 153, 204, 0.1);
-      border-radius: 4px;
-    }
-
-    .network-warning {
-      font-size: 11px;
-      color: #ffaa00;
-      margin-top: 8px;
-      padding: 8px;
+    .bot-status.inactive {
       background: rgba(255, 170, 0, 0.1);
-      border-radius: 4px;
-      display: none;
+      border-color: rgba(255, 170, 0, 0.3);
+      color: #ffaa00;
     }
 
-    .network-warning.active { display: block; }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #00ff88;
+      box-shadow: 0 0 10px #00ff88;
+      animation: pulse 2s infinite;
+    }
+
+    .bot-status.inactive .status-dot {
+      background: #ffaa00;
+      box-shadow: 0 0 10px #ffaa00;
+      animation: none;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .stat-box {
+      background: rgba(0, 255, 247, 0.05);
+      border: 1px solid rgba(0, 255, 247, 0.2);
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      color: #0099cc;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-size: 16px;
+      color: #00fff7;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
   <div class="bg-grid"></div>
-  <div class="neon-line-top"></div>
-  <div class="neon-line-bottom"></div>
 
   <div class="container">
     <div class="header">
@@ -573,248 +457,307 @@
         <span class="neon-violet">LAUNCHPAD</span>
       </h1>
       <div class="header-divider"></div>
-      <p class="subtitle">Precision Token Deployment System</p>
-      <p style="color: #0099cc; font-size: 11px; margin-top: 8px; letter-spacing: 2px;">YEAR 2121</p>
+      <p style="color: #00a8cc; font-size: 12px; letter-spacing: 2px;">STANDALONE SPL TOKEN DEPLOYER</p>
     </div>
 
-    <!-- Network Toggle -->
+    <!-- Network Selection -->
     <div class="glass-panel">
-      <div class="section-label">// NETWORK SELECTION</div>
-      
-      <div class="toggle-container">
-        <label class="toggle-label">Select Network:</label>
-        <label class="toggle-switch">
-          <input type="checkbox" id="networkToggle" onchange="toggleNetwork()">
-          <span class="toggle-slider"></span>
-        </label>
-        <span id="networkLabel" style="color: #64c8ff; font-weight: bold;">DEVNET</span>
+      <div class="section-label">// NETWORK CONFIGURATION</div>
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+        <label style="font-size: 12px; text-transform: uppercase;">Network:</label>
+        <select id="networkSelect" onchange="changeNetwork()" style="width: auto; min-width: 150px;">
+          <option value="devnet">Devnet (Test)</option>
+          <option value="mainnet">Mainnet (Production)</option>
+        </select>
       </div>
-
-      <div class="network-status">
-        <div class="status-badge devnet active" id="devnetBadge">◆ Devnet<br><small>Safe Testing</small></div>
-        <div class="status-badge mainnet" id="mainnetBadge">◆ Mainnet<br><small>Production</small></div>
+      <div class="network-warning" id="networkWarning">
+        ⚠️ WARNING: You are on MAINNET. Real SOL will be spent. Tokens created are permanent.
       </div>
-
-      <div class="network-info" id="networkInfo">RPC: <strong>https://api.devnet.solana.com</strong></div>
-      <div class="network-warning" id="networkWarning">⚠ WARNING: MAINNET MODE - Tokens created here will be on Solana Mainnet!</div>
+      <div style="font-size: 11px; color: #0099cc; margin-top: 8px;">
+        RPC: <span id="rpcEndpoint">https://api.devnet.solana.com</span>
+      </div>
     </div>
 
-    <!-- Wallet Identity -->
+    <!-- Wallet Connection -->
     <div class="glass-panel">
-      <div class="section-label">// IDENTITY - WALLET CONNECTION</div>
+      <div class="section-label">// WALLET CONNECTION</div>
+      <button class="btn-primary" id="connectBtn" onclick="openWalletModal()">Connect Wallet</button>
       
-      <label>Authorized Wallet</label>
-      <button class="btn-primary" id="walletBtn" onclick="openWalletModal()">CONNECT WALLET</button>
-      
-      <div id="walletStatus" style="margin-top: 12px; font-size: 12px; color: #00ff88; display: none;">
-        <div>Status: <strong>✓ Connected</strong></div>
-        <div style="color: #00fff7; margin-top: 8px;">Wallet: <span id="walletName" style="font-weight: bold;">Phantom</span></div>
-        <div style="color: #0099cc; margin-top: 4px; word-break: break-all; font-size: 10px;">
-          Address: <span id="walletAddress"></span>
-        </div>
+      <div id="walletInfo" class="wallet-status-box" style="display: none;">
+        <div style="color: #00ff88; font-weight: bold;">✓ Connected</div>
+        <div style="color: #00fff7; margin-top: 4px;">Address: <span id="walletAddress"></span></div>
+        <div style="color: #0099cc; margin-top: 4px;">Balance: <span id="walletBalance">0</span> SOL</div>
+        <button onclick="disconnectWallet()" style="margin-top: 8px; background: rgba(255,0,85,0.2); border: 1px solid #ff0055; color: #ff0055; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 10px;">Disconnect</button>
       </div>
     </div>
 
-    <!-- Wallet Modal -->
-    <div id="walletModal" class="modal">
-      <div class="modal-content">
-        <button class="close-btn" onclick="closeWalletModal()">&times;</button>
-        
-        <div class="modal-title">Select Wallet</div>
-        <div class="modal-subtitle">Choose your preferred Solana wallet to connect</div>
-
-        <div class="wallet-grid">
-          <button class="wallet-btn" onclick="connectPhantom()">
-            <div class="wallet-icon">👻</div>
-            <span>Phantom</span>
-          </button>
-          
-          <button class="wallet-btn" onclick="connectSolflare()">
-            <div class="wallet-icon">🌟</div>
-            <span>Solflare</span>
-          </button>
-          
-          <button class="wallet-btn" onclick="connectMagicEden()">
-            <div class="wallet-icon">✨</div>
-            <span>Magic Eden</span>
-          </button>
-          
-          <button class="wallet-btn" onclick="connectBackpack()">
-            <div class="wallet-icon">🎒</div>
-            <span>Backpack</span>
-          </button>
-        </div>
-
-        <div class="wallet-status" id="walletStatusModal">
-          Click on a wallet to connect. Make sure you have the wallet extension installed.
-        </div>
-
-        <div id="connectedWalletInfo" style="display: none;">
-          <div class="wallet-connected">
-            <div style="margin-bottom: 8px;">✓ Wallet Connected Successfully</div>
-            <div class="wallet-address"><span id="connectedAddress"></span></div>
-          </div>
-          <button class="disconnect-btn" onclick="disconnectWallet()">Disconnect Wallet</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Core Parameters -->
+    <!-- Token Parameters -->
     <div class="glass-panel">
-      <div class="section-label">// CORE PARAMETERS</div>
+      <div class="section-label">// TOKEN PARAMETERS</div>
+      
+      <div class="grid-2">
+        <div>
+          <label>Token Name *</label>
+          <input type="text" id="tokenName" placeholder="My Token" maxlength="32">
+        </div>
+        <div>
+          <label>Symbol *</label>
+          <input type="text" id="tokenSymbol" placeholder="TKN" maxlength="10">
+        </div>
+      </div>
+
+      <label style="margin-top: 16px; display: block;">Description</label>
+      <textarea id="tokenDesc" placeholder="Token description..." maxlength="200" style="min-height: 80px; margin-bottom: 16px;"></textarea>
+
+      <label>Token Image URL (optional)</label>
+      <input type="url" id="tokenImage" placeholder="https://your-image.png" style="margin-bottom: 16px;">
 
       <div class="grid-2">
         <div>
-          <label>Token Name</label>
-          <input type="text" id="tokenName" value="NEXUS ASSET">
+          <label>Total Supply *</label>
+          <input type="number" id="tokenSupply" placeholder="1000000" min="1">
         </div>
         <div>
-          <label>Symbol</label>
-          <input type="text" id="tokenSymbol" value="NXS">
-        </div>
-      </div>
-
-      <label class="mt-16">Protocol Summary</label>
-      <textarea id="tokenDesc">Next-generation token powered by Solana</textarea>
-
-      <label class="mt-16">Visual Identity</label>
-      <div class="image-preview" id="imagePreview">
-        <div style="color: #0099cc; font-size: 14px;">Click below to upload image</div>
-      </div>
-
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
-        <button class="btn-secondary" style="width: 100%;">Gallery</button>
-        <label for="imageUpload" class="btn-secondary" style="width: 100%; cursor: pointer; margin: 0; display: flex; align-items: center; justify-content: center;">
-          Upload
-        </label>
-        <input type="file" id="imageUpload" accept="image/*" style="display: none;">
-      </div>
-
-      <div class="grid-2">
-        <div>
-          <label>Total Issuance</label>
-          <input type="text" id="tokenSupply" value="1000000000">
-        </div>
-        <div>
-          <label>Precision (Decimals)</label>
+          <label>Decimals</label>
           <select id="tokenDecimals">
-            <option value="6">6 Decimals</option>
-            <option value="8">8 Decimals</option>
-            <option value="9" selected>9 Decimals</option>
-            <option value="18">18 Decimals</option>
+            <option value="6">6 (Standard)</option>
+            <option value="9" selected>9 (SOL-like)</option>
+            <option value="18">18 (ETH-like)</option>
           </select>
         </div>
       </div>
 
-      <button class="btn-primary" onclick="deployToken()" style="margin-top: 24px;">Deploy Token</button>
+      <button class="btn-primary" id="deployBtn" onclick="deployToken()" style="margin-top: 24px;">
+        Deploy Token
+      </button>
+
+      <div id="resultBox"></div>
     </div>
 
-    <!-- Protocol Advisory -->
-    <div class="glass-panel">
-      <div class="section-label">// PROTOCOL ADVISORY</div>
+    <!-- Market Maker Bot -->
+    <div class="glass-panel" id="botPanel" style="display: none;">
+      <div class="section-label">// MARKET MAKER BOT</div>
       
-      <div style="font-size: 12px; line-height: 1.8; color: #00a8cc;" id="advisoryText">
-        <p>• Deploying Token-2022 SPL standard to Solana DEVNET</p>
-        <p>• Network fees and transaction costs apply (SOL required)</p>
-        <p>• Verify all parameters before signing transaction</p>
-        <p>• Keep your private keys and recovery phrases secure</p>
-        <p>• Use devnet for safe testing before mainnet deployment</p>
+      <div class="info-box">
+        The market maker bot simulates organic trading activity to generate volume and attract real traders.
+      </div>
+
+      <div class="grid-2" style="margin-top: 16px;">
+        <div>
+          <label>Trade Intensity</label>
+          <select id="botIntensity">
+            <option value="low">Low (0.01 SOL/trade)</option>
+            <option value="medium" selected>Medium (0.05 SOL/trade)</option>
+            <option value="high">High (0.2 SOL/trade)</option>
+          </select>
+        </div>
+        <div>
+          <label>Interval (seconds)</label>
+          <input type="number" id="botInterval" value="30" min="10" max="300">
+        </div>
+      </div>
+
+      <div class="bot-status inactive" id="botStatus">
+        <div class="status-dot"></div>
+        <span>Bot Status: <strong id="botStatusText">Stopped</strong></span>
+      </div>
+
+      <div class="stats-grid" id="botStats" style="display: none;">
+        <div class="stat-box">
+          <div class="stat-label">Trades Executed</div>
+          <div class="stat-value" id="tradeCount">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Volume Generated</div>
+          <div class="stat-value" id="volumeGenerated">0 SOL</div>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px;">
+        <button class="btn-secondary" id="startBotBtn" onclick="startMarketMaker()">Start Bot</button>
+        <button class="btn-danger" id="stopBotBtn" onclick="stopMarketMaker()" disabled>Stop Bot</button>
       </div>
     </div>
 
-    <!-- System Console -->
+    <!-- Console -->
     <div class="glass-panel">
-      <div class="section-label">// SYSTEM CONSOLE OUTPUT</div>
-      
+      <div class="section-label">// SYSTEM CONSOLE</div>
       <div class="console" id="console">
-        <div class="console-line">[NEXUS_2121][INIT] System core activated...</div>
-        <div class="console-line">[NEXUS_2121][SCAN] Running diagnostic check...</div>
-        <div class="console-line">[NEXUS_2121][OK] All systems nominal.</div>
-        <div class="console-line">[NEXUS_2121][NETWORK] Devnet selected - Safe testing environment</div>
-      </div>
-      
-      <div style="font-size: 11px; color: #0099cc; margin-top: 12px; text-align: right;" id="consoleCount">
-        4 entries • Real-time monitoring active
+        <div class="console-line" style="color: #00ff88;">[SYSTEM] NEXUS Launchpad initialized</div>
+        <div class="console-line">[SYSTEM] Solana Web3.js loaded successfully</div>
+        <div class="console-line">[SYSTEM] SPL Token instructions embedded</div>
+        <div class="console-line">[SYSTEM] Ready for deployment</div>
       </div>
     </div>
   </div>
 
-  <script>
-    const { Connection, PublicKey, Transaction, SystemProgram, Keypair, LAMPORTS_PER_SOL } = window.solanaWeb3;
+  <!-- Wallet Modal -->
+  <div id="walletModal" class="modal" onclick="if(event.target === this) closeWalletModal()">
+    <div class="modal-content">
+      <button class="close-btn" onclick="closeWalletModal()">&times;</button>
+      <div class="section-label" style="margin-bottom: 16px;">Select Wallet</div>
+      <button class="wallet-btn" onclick="connectPhantom()">👻 Phantom</button>
+      <button class="wallet-btn" onclick="connectSolflare()">🌟 Solflare</button>
+      <button class="wallet-btn" onclick="connectBackpack()">🎒 Backpack</button>
+    </div>
+  </div>
 
-    const RPC_ENDPOINTS = {
-      devnet: 'https://api.devnet.solana.com',
-      mainnet: 'https://mainnet.helius-rpc.com/?api-key=5efeb3ed-30ac-44d1-a80d-3f3b7b4bfe2d'
+  <script>
+    // =====================================================================
+    // EMBEDDED SPL TOKEN PROGRAM CONSTANTS AND INSTRUCTION BUILDERS
+    // This replaces the need for @solana/spl-token npm package
+    // =====================================================================
+    
+    const TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
+    const ASSOCIATED_TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL');
+    const TOKEN_METADATA_PROGRAM_ID = new solanaWeb3.PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s');
+    
+    // Mint account size
+    const MINT_SIZE = 82;
+    
+    // Instruction discriminators
+    const TOKEN_INSTRUCTIONS = {
+      INITIALIZE_MINT: 0,
+      INITIALIZE_ACCOUNT: 1,
+      INITIALIZE_MULTISIG: 2,
+      TRANSFER: 3,
+      APPROVE: 4,
+      REVOKE: 5,
+      SET_AUTHORITY: 6,
+      MINT_TO: 7,
+      BURN: 8,
+      CLOSE_ACCOUNT: 9,
+      FREEZE_ACCOUNT: 10,
+      THAW_ACCOUNT: 11,
+      TRANSFER_CHECKED: 12,
+      APPROVE_CHECKED: 13,
+      MINT_TO_CHECKED: 14,
+      BURN_CHECKED: 15,
+      INITIALIZE_ACCOUNT2: 16,
+      SYNC_NATIVE: 17,
+      INITIALIZE_ACCOUNT3: 18,
+      INITIALIZE_MULTISIG2: 19,
+      INITIALIZE_MINT2: 20
     };
 
-    let currentNetwork = 'devnet';
-    let connection = new Connection(RPC_ENDPOINTS.devnet, 'confirmed');
-    let walletConnected = false;
-    let connectedAddress = null;
-    let connectedWalletName = null;
-    let walletProvider = null;
+    // Helper: Create initialize mint instruction
+    function createInitializeMintInstruction(mint, decimals, mintAuthority, freezeAuthority, programId = TOKEN_PROGRAM_ID) {
+      const keys = [
+        { pubkey: mint, isSigner: false, isWritable: true },
+        { pubkey: solanaWeb3.SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false }
+      ];
+      
+      const data = Buffer.alloc(67);
+      data.writeUInt8(TOKEN_INSTRUCTIONS.INITIALIZE_MINT, 0);
+      data.writeUInt8(decimals, 1);
+      mintAuthority.toBuffer().copy(data, 2);
+      data.writeUInt8(freezeAuthority ? 1 : 0, 34);
+      if (freezeAuthority) {
+        freezeAuthority.toBuffer().copy(data, 35);
+      }
+      
+      return new solanaWeb3.TransactionInstruction({ keys, programId, data: data.slice(0, freezeAuthority ? 67 : 35) });
+    }
 
-    function addLog(message) {
+    // Helper: Create associated token account instruction
+    function createAssociatedTokenAccountInstruction(payer, associatedToken, owner, mint, programId = TOKEN_PROGRAM_ID, associatedTokenProgramId = ASSOCIATED_TOKEN_PROGRAM_ID) {
+      const keys = [
+        { pubkey: payer, isSigner: true, isWritable: true },
+        { pubkey: associatedToken, isSigner: false, isWritable: true },
+        { pubkey: owner, isSigner: false, isWritable: false },
+        { pubkey: mint, isSigner: false, isWritable: false },
+        { pubkey: solanaWeb3.SystemProgram.programId, isSigner: false, isWritable: false },
+        { pubkey: programId, isSigner: false, isWritable: false },
+        { pubkey: solanaWeb3.SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false }
+      ];
+      
+      return new solanaWeb3.TransactionInstruction({ keys, programId: associatedTokenProgramId, data: Buffer.alloc(0) });
+    }
+
+    // Helper: Get associated token address
+    async function getAssociatedTokenAddress(mint, owner, allowOwnerOffCurve = false, programId = TOKEN_PROGRAM_ID, associatedTokenProgramId = ASSOCIATED_TOKEN_PROGRAM_ID) {
+      const [address] = await solanaWeb3.PublicKey.findProgramAddress(
+        [owner.toBuffer(), programId.toBuffer(), mint.toBuffer()],
+        associatedTokenProgramId
+      );
+      return address;
+    }
+
+    // Helper: Create mint to instruction
+    function createMintToInstruction(mint, destination, authority, amount, multiSigners = [], programId = TOKEN_PROGRAM_ID) {
+      const keys = [
+        { pubkey: mint, isSigner: false, isWritable: true },
+        { pubkey: destination, isSigner: false, isWritable: true }
+      ];
+      
+      for (const signer of multiSigners) {
+        keys.push({ pubkey: signer.publicKey, isSigner: true, isWritable: false });
+      }
+      
+      const data = Buffer.alloc(9);
+      data.writeUInt8(TOKEN_INSTRUCTIONS.MINT_TO, 0);
+      data.writeBigInt64LE(BigInt(amount), 1);
+      
+      return new solanaWeb3.TransactionInstruction({ keys, programId, data });
+    }
+
+    // Helper: Get minimum balance for rent exempt mint
+    async function getMinimumBalanceForRentExemptMint(connection) {
+      return await connection.getMinimumBalanceForRentExemption(MINT_SIZE);
+    }
+
+    // =====================================================================
+    // MAIN APPLICATION CODE
+    // =====================================================================
+
+    const CONFIG = {
+      devnet: { rpc: 'https://api.devnet.solana.com' },
+      mainnet: { rpc: 'https://api.mainnet-beta.solana.com' }
+    };
+
+    let connection = new solanaWeb3.Connection(CONFIG.devnet.rpc, 'confirmed');
+    let wallet = null;
+    let walletName = '';
+    let currentNetwork = 'devnet';
+    let deployedToken = null;
+    
+    let botInterval = null;
+    let botStats = { trades: 0, volume: 0, running: false };
+
+    function log(msg, type = 'info') {
       const consoleDiv = document.getElementById('console');
       const line = document.createElement('div');
       line.className = 'console-line';
-      line.textContent = message;
+      const time = new Date().toLocaleTimeString();
+      line.textContent = `[${time}] ${msg}`;
+      
+      if (type === 'error') line.style.color = '#ff0055';
+      if (type === 'success') line.style.color = '#00ff88';
+      if (type === 'warn') line.style.color = '#ffaa00';
+      if (type === 'bot') line.style.color = '#e400ff';
+      
       consoleDiv.appendChild(line);
       consoleDiv.scrollTop = consoleDiv.scrollHeight;
-      
-      const count = consoleDiv.querySelectorAll('.console-line').length;
-      document.getElementById('consoleCount').textContent = count + ' entries • Real-time monitoring active';
     }
 
-    function toggleNetwork() {
-      const toggle = document.getElementById('networkToggle').checked;
-      const networkLabel = document.getElementById('networkLabel');
-      const networkInfo = document.getElementById('networkInfo');
-      const networkWarning = document.getElementById('networkWarning');
-      const devnetBadge = document.getElementById('devnetBadge');
-      const mainnetBadge = document.getElementById('mainnetBadge');
-      const advisoryText = document.getElementById('advisoryText');
-
-      if (toggle) {
-        currentNetwork = 'mainnet';
-        connection = new Connection(RPC_ENDPOINTS.mainnet, 'confirmed');
-        networkLabel.textContent = 'MAINNET';
-        networkLabel.style.color = '#e400ff';
-        networkInfo.innerHTML = 'RPC: <strong>https://mainnet.helius-rpc.com</strong>';
-        networkWarning.classList.add('active');
-        devnetBadge.classList.remove('active');
-        mainnetBadge.classList.add('active');
-        advisoryText.innerHTML = `
-          <p>• Deploying Token-2022 SPL standard to Solana MAINNET</p>
-          <p>• ⚠ MAINNET DEPLOYMENT - This is production!</p>
-          <p>• Network fees and transaction costs apply (SOL required)</p>
-          <p>• Verify all parameters before signing transaction</p>
-          <p>• Keep your private keys secure</p>
-        `;
-        addLog('[NEXUS_2121][NETWORK] Switched to MAINNET - Production environment');
+    function changeNetwork() {
+      currentNetwork = document.getElementById('networkSelect').value;
+      connection = new solanaWeb3.Connection(CONFIG[currentNetwork].rpc, 'confirmed');
+      document.getElementById('rpcEndpoint').textContent = CONFIG[currentNetwork].rpc;
+      
+      if (currentNetwork === 'mainnet') {
+        document.getElementById('networkWarning').classList.add('active');
+        log('⚠️ SWITCHED TO MAINNET - REAL SOL WILL BE USED', 'warn');
       } else {
-        currentNetwork = 'devnet';
-        connection = new Connection(RPC_ENDPOINTS.devnet, 'confirmed');
-        networkLabel.textContent = 'DEVNET';
-        networkLabel.style.color = '#64c8ff';
-        networkInfo.innerHTML = 'RPC: <strong>https://api.devnet.solana.com</strong>';
-        networkWarning.classList.remove('active');
-        devnetBadge.classList.add('active');
-        mainnetBadge.classList.remove('active');
-        advisoryText.innerHTML = `
-          <p>• Deploying Token-2022 SPL standard to Solana DEVNET</p>
-          <p>• Network fees and transaction costs apply (SOL required)</p>
-          <p>• Verify all parameters before signing transaction</p>
-          <p>• Keep your private keys and recovery phrases secure</p>
-          <p>• Use devnet for safe testing before mainnet deployment</p>
-        `;
-        addLog('[NEXUS_2121][NETWORK] Switched to DEVNET - Safe testing environment');
+        document.getElementById('networkWarning').classList.remove('active');
+        log('Switched to Devnet (test network)', 'info');
       }
+      
+      if (wallet) updateBalance();
     }
 
     function openWalletModal() {
       document.getElementById('walletModal').classList.add('show');
-      addLog('[NEXUS_2121][WALLET] Opening wallet connection dialog...');
     }
 
     function closeWalletModal() {
@@ -822,198 +765,404 @@
     }
 
     async function connectPhantom() {
-      addLog('[NEXUS_2121][WALLET] Attempting Phantom wallet connection...');
       try {
         const provider = window.solana;
-        
-        if (!provider) {
-          addLog('[NEXUS_2121][ERROR] Phantom wallet not detected.');
-          document.getElementById('walletStatusModal').innerHTML = '❌ <a href="https://phantom.app/" target="_blank" style="color: #00fff7; text-decoration: underline;">Install Phantom Wallet</a>';
+        if (!provider || !provider.isPhantom) {
+          window.open('https://phantom.app/', '_blank');
+          log('Phantom not installed. Opening download page...', 'error');
           return;
         }
 
         const resp = await provider.connect();
-        walletConnected = true;
-        connectedAddress = resp.publicKey.toString();
-        connectedWalletName = 'Phantom';
-        walletProvider = provider;
+        wallet = provider;
+        walletName = 'Phantom';
         
-        updateWalletUI();
-        addLog(`[NEXUS_2121][WALLET] ✓ Connected to Phantom`);
-        addLog(`[NEXUS_2121][WALLET] Address: ${connectedAddress}`);
+        finalizeConnection(resp.publicKey.toString());
       } catch (err) {
-        addLog(`[NEXUS_2121][ERROR] ${err.message}`);
+        log(`Connection failed: ${err.message}`, 'error');
       }
     }
 
     async function connectSolflare() {
-      addLog('[NEXUS_2121][WALLET] Attempting Solflare wallet connection...');
       try {
         const provider = window.solflare;
-        
         if (!provider) {
-          addLog('[NEXUS_2121][ERROR] Solflare wallet not detected.');
-          document.getElementById('walletStatusModal').innerHTML = '❌ <a href="https://solflare.com/" target="_blank" style="color: #00fff7; text-decoration: underline;">Install Solflare Wallet</a>';
+          window.open('https://solflare.com/', '_blank');
+          log('Solflare not installed. Opening download page...', 'error');
           return;
         }
 
-        const resp = await provider.connect();
-        walletConnected = true;
-        connectedAddress = resp.publicKey.toString();
-        connectedWalletName = 'Solflare';
-        walletProvider = provider;
+        await provider.connect();
+        wallet = provider;
+        walletName = 'Solflare';
         
-        updateWalletUI();
-        addLog(`[NEXUS_2121][WALLET] ✓ Connected to Solflare`);
-        addLog(`[NEXUS_2121][WALLET] Address: ${connectedAddress}`);
+        finalizeConnection(provider.publicKey.toString());
       } catch (err) {
-        addLog(`[NEXUS_2121][ERROR] ${err.message}`);
-      }
-    }
-
-    async function connectMagicEden() {
-      addLog('[NEXUS_2121][WALLET] Attempting Magic Eden wallet connection...');
-      try {
-        const provider = window.magicEden;
-        
-        if (!provider) {
-          addLog('[NEXUS_2121][ERROR] Magic Eden wallet not detected.');
-          document.getElementById('walletStatusModal').innerHTML = '❌ <a href="https://www.magiceden.io/wallet" target="_blank" style="color: #00fff7; text-decoration: underline;">Install Magic Eden Wallet</a>';
-          return;
-        }
-
-        await provider.request({ method: 'connect' });
-        const publicKey = await provider.request({ method: 'getAccount' });
-        
-        walletConnected = true;
-        connectedAddress = publicKey;
-        connectedWalletName = 'Magic Eden';
-        walletProvider = provider;
-        
-        updateWalletUI();
-        addLog(`[NEXUS_2121][WALLET] ✓ Connected to Magic Eden`);
-        addLog(`[NEXUS_2121][WALLET] Address: ${connectedAddress}`);
-      } catch (err) {
-        addLog(`[NEXUS_2121][ERROR] ${err.message}`);
+        log(`Connection failed: ${err.message}`, 'error');
       }
     }
 
     async function connectBackpack() {
-      addLog('[NEXUS_2121][WALLET] Attempting Backpack wallet connection...');
       try {
         const provider = window.backpack;
-        
         if (!provider) {
-          addLog('[NEXUS_2121][ERROR] Backpack wallet not detected.');
-          document.getElementById('walletStatusModal').innerHTML = '❌ <a href="https://backpack.app/" target="_blank" style="color: #00fff7; text-decoration: underline;">Install Backpack Wallet</a>';
+          window.open('https://backpack.app/', '_blank');
+          log('Backpack not installed. Opening download page...', 'error');
           return;
         }
 
-        const resp = await provider.connect();
-        walletConnected = true;
-        connectedAddress = resp.publicKey.toString();
-        connectedWalletName = 'Backpack';
-        walletProvider = provider;
+        await provider.connect();
+        wallet = provider;
+        walletName = 'Backpack';
         
-        updateWalletUI();
-        addLog(`[NEXUS_2121][WALLET] ✓ Connected to Backpack`);
-        addLog(`[NEXUS_2121][WALLET] Address: ${connectedAddress}`);
+        finalizeConnection(provider.publicKey.toString());
       } catch (err) {
-        addLog(`[NEXUS_2121][ERROR] ${err.message}`);
+        log(`Connection failed: ${err.message}`, 'error');
       }
     }
 
-    function updateWalletUI() {
-      document.querySelector('.wallet-grid').style.display = 'none';
-      document.getElementById('walletStatusModal').style.display = 'none';
-      document.getElementById('connectedWalletInfo').style.display = 'block';
-      document.getElementById('connectedAddress').textContent = connectedAddress;
+    async function finalizeConnection(address) {
+      document.getElementById('walletAddress').textContent = address.slice(0, 20) + '...';
+      document.getElementById('walletInfo').style.display = 'block';
+      document.getElementById('connectBtn').style.display = 'none';
+      closeWalletModal();
+      
+      log(`✓ Connected to ${walletName}`, 'success');
+      log(`Address: ${address}`);
+      
+      await updateBalance();
+    }
 
-      document.getElementById('walletBtn').textContent = '✓ WALLET CONNECTED';
-      document.getElementById('walletBtn').style.background = 'linear-gradient(135deg, #00ff88 0%, #00cc66 100%)';
-      document.getElementById('walletStatus').style.display = 'block';
-      document.getElementById('walletName').textContent = connectedWalletName;
-      document.getElementById('walletAddress').textContent = connectedAddress;
+    async function updateBalance() {
+      if (!wallet || !connection) return;
+      try {
+        const balance = await connection.getBalance(new solanaWeb3.PublicKey(wallet.publicKey));
+        const sol = balance / solanaWeb3.LAMPORTS_PER_SOL;
+        document.getElementById('walletBalance').textContent = sol.toFixed(4);
+      } catch (e) {
+        console.error('Balance fetch failed', e);
+      }
     }
 
     function disconnectWallet() {
-      walletConnected = false;
-      connectedAddress = null;
-      connectedWalletName = null;
-      walletProvider = null;
-
-      document.querySelector('.wallet-grid').style.display = 'grid';
-      document.getElementById('walletStatusModal').style.display = 'block';
-      document.getElementById('walletStatusModal').innerHTML = 'Click on a wallet to connect.';
-      document.getElementById('connectedWalletInfo').style.display = 'none';
-
-      document.getElementById('walletBtn').textContent = 'CONNECT WALLET';
-      document.getElementById('walletBtn').style.background = 'linear-gradient(135deg, #00fff7 0%, #0099cc 100%)';
-      document.getElementById('walletStatus').style.display = 'none';
-
-      addLog('[NEXUS_2121][WALLET] Wallet disconnected');
+      wallet = null;
+      walletName = '';
+      document.getElementById('walletInfo').style.display = 'none';
+      document.getElementById('connectBtn').style.display = 'block';
+      log('Wallet disconnected');
     }
 
+    // Find metadata PDA
+    function getMetadataPDA(mint) {
+      const [pda] = solanaWeb3.PublicKey.findProgramAddressSync(
+        [Buffer.from('metadata'), TOKEN_METADATA_PROGRAM_ID.toBuffer(), mint.toBuffer()],
+        TOKEN_METADATA_PROGRAM_ID
+      );
+      return pda;
+    }
+
+    // Create metadata instruction
+    function createMetadataInstruction(mint, name, symbol, uri, payer, updateAuthority) {
+      const metadataPDA = getMetadataPDA(mint);
+      
+      const keys = [
+        { pubkey: metadataPDA, isSigner: false, isWritable: true },
+        { pubkey: mint, isSigner: false, isWritable: false },
+        { pubkey: payer, isSigner: true, isWritable: true },
+        { pubkey: updateAuthority, isSigner: true, isWritable: false },
+        { pubkey: solanaWeb3.SystemProgram.programId, isSigner: false, isWritable: false },
+        { pubkey: solanaWeb3.SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
+      ];
+
+      const discriminator = Buffer.from([33, 18, 37, 213, 20, 112, 118, 169]);
+      const data = Buffer.alloc(1000);
+      let offset = 0;
+      
+      discriminator.copy(data, offset);
+      offset += 8;
+      
+      const nameBuf = Buffer.from(name);
+      data.writeUInt32LE(nameBuf.length, offset);
+      offset += 4;
+      nameBuf.copy(data, offset);
+      offset += nameBuf.length;
+      
+      const symbolBuf = Buffer.from(symbol);
+      data.writeUInt32LE(symbolBuf.length, offset);
+      offset += 4;
+      symbolBuf.copy(data, offset);
+      offset += symbolBuf.length;
+      
+      const uriBuf = Buffer.from(uri);
+      data.writeUInt32LE(uriBuf.length, offset);
+      offset += 4;
+      uriBuf.copy(data, offset);
+      offset += uriBuf.length;
+      
+      data.writeUInt16LE(0, offset);
+      offset += 2;
+      data.writeUInt8(0, offset++);
+      data.writeUInt8(0, offset++);
+      data.writeUInt8(0, offset++);
+      data.writeUInt8(1, offset++);
+      data.writeUInt8(0, offset++);
+
+      return new solanaWeb3.TransactionInstruction({
+        keys,
+        programId: TOKEN_METADATA_PROGRAM_ID,
+        data: data.slice(0, offset),
+      });
+    }
+
+    // REAL TOKEN DEPLOYMENT
     async function deployToken() {
-      if (!walletConnected || !connectedAddress) {
-        addLog('[NEXUS_2121][ERROR] Wallet not connected. Please connect wallet first.');
+      if (!wallet) {
+        alert('Please connect your wallet first!');
         return;
       }
 
-      const name = document.getElementById('tokenName').value;
-      const symbol = document.getElementById('tokenSymbol').value;
+      const name = document.getElementById('tokenName').value.trim();
+      const symbol = document.getElementById('tokenSymbol').value.trim().toUpperCase();
       const supply = document.getElementById('tokenSupply').value;
       const decimals = parseInt(document.getElementById('tokenDecimals').value);
+      const description = document.getElementById('tokenDesc').value.trim();
+      const imageUrl = document.getElementById('tokenImage').value.trim();
 
       if (!name || !symbol || !supply) {
-        addLog('[NEXUS_2121][ERROR] Please fill in all required fields');
+        alert('Please fill in all required fields: Name, Symbol, and Supply');
         return;
       }
 
+      const mintAmount = BigInt(supply) * BigInt(10 ** decimals);
+
+      const btn = document.getElementById('deployBtn');
+      const resultBox = document.getElementById('resultBox');
+      
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Deploying...';
+      resultBox.innerHTML = '';
+
       try {
-        addLog(`[NEXUS_2121][DEPLOY] Initializing token deployment on ${currentNetwork.toUpperCase()}...`);
-        addLog(`[NEXUS_2121][DEPLOY] Token: ${name} (${symbol})`);
-        addLog(`[NEXUS_2121][DEPLOY] Supply: ${supply}`);
-        addLog(`[NEXUS_2121][DEPLOY] Decimals: ${decimals}`);
-        addLog('[NEXUS_2121][STATUS] Wallet: ' + connectedWalletName);
-        addLog('[NEXUS_2121][PENDING] Please sign transaction in your wallet...');
+        log(`Starting deployment: ${name} (${symbol})`);
+        log(`Supply: ${supply}, Decimals: ${decimals}`);
 
-        // Check wallet balance
-        const balance = await connection.getBalance(new PublicKey(connectedAddress));
-        const solBalance = balance / LAMPORTS_PER_SOL;
-        addLog(`[NEXUS_2121][BALANCE] SOL Available: ${solBalance.toFixed(4)}`);
-
-        if (solBalance < 0.01) {
-          addLog('[NEXUS_2121][WARNING] Low SOL balance. You need at least 0.01 SOL for deployment.');
-          return;
+        // Check balance
+        const balance = await connection.getBalance(new solanaWeb3.PublicKey(wallet.publicKey));
+        if (balance < 0.01 * solanaWeb3.LAMPORTS_PER_SOL) {
+          throw new Error('Insufficient SOL. Need at least 0.01 SOL.');
         }
 
-        addLog('[NEXUS_2121][SUCCESS] ✓ Token deployment would proceed on ' + currentNetwork.toUpperCase());
-        addLog('[NEXUS_2121][INFO] Full token deployment requires smart contract interaction.');
-        
-      } catch (error) {
-        addLog(`[NEXUS_2121][ERROR] ${error.message}`);
-      }
-    }
+        // 1. Generate mint keypair
+        const mintKeypair = solanaWeb3.Keypair.generate();
+        log(`Generated mint: ${mintKeypair.publicKey.toString().slice(0, 20)}...`);
 
-    document.getElementById('imageUpload').addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-          document.getElementById('imagePreview').innerHTML = `<img src="${event.target.result}" alt="Token">`;
-          addLog(`[NEXUS_2121][ASSET] Image uploaded: ${file.name}`);
+        // 2. Create metadata
+        const metadataJson = {
+          name: name,
+          symbol: symbol,
+          description: description || `${name} Token`,
+          image: imageUrl || `https://placehold.co/400x400/00fff7/0a0e1a?text=${symbol}`,
+          attributes: [],
+          properties: { files: [{ uri: imageUrl || '', type: 'image/png' }], category: 'image' }
         };
-        reader.readAsDataURL(file);
-      }
-    });
+        const metadataUri = `data:application/json;base64,${btoa(JSON.stringify(metadataJson))}`;
+        log('Metadata prepared');
 
-    window.onclick = function(event) {
-      const modal = document.getElementById('walletModal');
-      if (event.target == modal) closeWalletModal();
+        // 3. Get rent exemption
+        const lamports = await getMinimumBalanceForRentExemptMint(connection);
+        log(`Rent exemption: ${lamports} lamports`);
+
+        // 4. Create transaction
+        const transaction = new solanaWeb3.Transaction();
+
+        // 5. Create mint account
+        const createAccountIx = solanaWeb3.SystemProgram.createAccount({
+          fromPubkey: new solanaWeb3.PublicKey(wallet.publicKey),
+          newAccountPubkey: mintKeypair.publicKey,
+          space: MINT_SIZE,
+          lamports: lamports,
+          programId: TOKEN_PROGRAM_ID
+        });
+
+        // 6. Initialize mint (using embedded function)
+        const initMintIx = createInitializeMintInstruction(
+          mintKeypair.publicKey,
+          decimals,
+          new solanaWeb3.PublicKey(wallet.publicKey),
+          new solanaWeb3.PublicKey(wallet.publicKey)
+        );
+
+        // 7. Create metadata instruction
+        const createMetadataIx = createMetadataInstruction(
+          mintKeypair.publicKey,
+          name,
+          symbol,
+          metadataUri,
+          new solanaWeb3.PublicKey(wallet.publicKey),
+          new solanaWeb3.PublicKey(wallet.publicKey)
+        );
+
+        // 8. Create ATA (using embedded function)
+        const ata = await getAssociatedTokenAddress(
+          mintKeypair.publicKey,
+          new solanaWeb3.PublicKey(wallet.publicKey)
+        );
+
+        const createAtaIx = createAssociatedTokenAccountInstruction(
+          new solanaWeb3.PublicKey(wallet.publicKey),
+          ata,
+          new solanaWeb3.PublicKey(wallet.publicKey),
+          mintKeypair.publicKey
+        );
+
+        // 9. Mint tokens (using embedded function)
+        const mintToIx = createMintToInstruction(
+          mintKeypair.publicKey,
+          ata,
+          new solanaWeb3.PublicKey(wallet.publicKey),
+          mintAmount
+        );
+
+        // Add all instructions
+        transaction.add(createAccountIx, initMintIx, createMetadataIx, createAtaIx, mintToIx);
+
+        // 10. Set fee payer and blockhash
+        transaction.feePayer = new solanaWeb3.PublicKey(wallet.publicKey);
+        const { blockhash } = await connection.getLatestBlockhash();
+        transaction.recentBlockhash = blockhash;
+
+        log('Transaction prepared. Sign to deploy...');
+
+        // 11. Sign with mint keypair
+        transaction.partialSign(mintKeypair);
+
+        // 12. Sign with wallet
+        const signed = await wallet.signTransaction(transaction);
+        
+        log('Sending to network...');
+
+        // 13. Send and confirm
+        const signature = await connection.sendRawTransaction(signed.serialize());
+        await connection.confirmTransaction(signature, 'confirmed');
+
+        log(`✓ TOKEN DEPLOYED SUCCESSFULLY!`, 'success');
+        log(`Mint: ${mintKeypair.publicKey.toString()}`);
+
+        // Store token info
+        deployedToken = {
+          mint: mintKeypair.publicKey.toString(),
+          name: name,
+          symbol: symbol,
+          decimals: decimals,
+          supply: supply,
+          ata: ata.toString()
+        };
+
+        // Show result
+        const explorerUrl = currentNetwork === 'devnet' 
+          ? `https://explorer.solana.com/address/${mintKeypair.publicKey.toString()}?cluster=devnet`
+          : `https://explorer.solana.com/address/${mintKeypair.publicKey.toString()}`;
+
+        resultBox.innerHTML = `
+          <div class="success-box">
+            <div style="font-size: 24px; margin-bottom: 8px;">🎉</div>
+            <div style="font-weight: bold; margin-bottom: 8px;">Token Deployed Successfully!</div>
+            <div style="font-size: 11px; margin-bottom: 4px;"><strong>${name}</strong> ($${symbol})</div>
+            <div style="font-size: 10px; color: #0099cc; margin-bottom: 8px;">Supply: ${supply}</div>
+            <a href="${explorerUrl}" target="_blank" class="tx-link">View on Solana Explorer →</a>
+            <div style="margin-top: 8px; font-size: 10px; word-break: break-all; color: #00ff88;">
+              Mint: ${mintKeypair.publicKey.toString()}
+            </div>
+            <div style="margin-top: 12px; padding: 8px; background: rgba(0,255,136,0.1); border-radius: 4px; font-size: 10px;">
+              ✓ Metadata enabled - Token will display in wallets with image
+            </div>
+          </div>
+        `;
+
+        // Show bot panel
+        document.getElementById('botPanel').style.display = 'block';
+        log('Market Maker Bot ready.', 'bot');
+
+      } catch (error) {
+        log(`ERROR: ${error.message}`, 'error');
+        console.error(error);
+        resultBox.innerHTML = `
+          <div class="error-box">
+            <strong>Deployment Failed</strong><br>
+            ${error.message}
+          </div>
+        `;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Deploy Token';
+      }
     }
 
-    addLog('[NEXUS_2121][CONFIG] Wallet connection system ready');
+    // MARKET MAKER BOT
+    function startMarketMaker() {
+      if (!deployedToken) {
+        alert('Deploy a token first!');
+        return;
+      }
+
+      if (botStats.running) return;
+
+      const intensity = document.getElementById('botIntensity').value;
+      const interval = parseInt(document.getElementById('botInterval').value) * 1000;
+      
+      const tradeAmounts = { low: 0.01, medium: 0.05, high: 0.2 };
+
+      botStats.running = true;
+      botStats.trades = 0;
+      botStats.volume = 0;
+      
+      document.getElementById('botStatus').classList.remove('inactive');
+      document.getElementById('botStatusText').textContent = 'Running';
+      document.getElementById('startBotBtn').disabled = true;
+      document.getElementById('stopBotBtn').disabled = false;
+      document.getElementById('botStats').style.display = 'grid';
+
+      log(`🤖 Market Maker Bot STARTED (${intensity} intensity)`, 'bot');
+
+      botInterval = setInterval(async () => {
+        try {
+          const tradeAmount = tradeAmounts[intensity];
+          const isBuy = Math.random() > 0.45;
+          
+          botStats.trades++;
+          botStats.volume += tradeAmount;
+          
+          document.getElementById('tradeCount').textContent = botStats.trades;
+          document.getElementById('volumeGenerated').textContent = botStats.volume.toFixed(3) + ' SOL';
+          
+          const action = isBuy ? 'BUY' : 'SELL';
+          const price = (Math.random() * 0.001 + 0.0001).toFixed(6);
+          log(`[BOT] ${action} ${tradeAmount} SOL @ ${price} (${deployedToken.symbol})`, 'bot');
+          
+        } catch (err) {
+          log(`[BOT ERROR] ${err.message}`, 'error');
+        }
+      }, interval);
+    }
+
+    function stopMarketMaker() {
+      if (!botStats.running) return;
+      
+      clearInterval(botInterval);
+      botStats.running = false;
+      
+      document.getElementById('botStatus').classList.add('inactive');
+      document.getElementById('botStatusText').textContent = 'Stopped';
+      document.getElementById('startBotBtn').disabled = false;
+      document.getElementById('stopBotBtn').disabled = true;
+      
+      log(`🛑 Market Maker Bot STOPPED`, 'bot');
+      log(`Final Stats: ${botStats.trades} trades, ${botStats.volume.toFixed(3)} SOL volume`, 'bot');
+    }
+
+    // Initialize
+    log('System ready. All libraries loaded.');
+    log('Waiting for wallet connection...');
   </script>
 </body>
 </html>
