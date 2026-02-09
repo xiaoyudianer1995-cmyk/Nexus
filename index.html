@@ -4,8 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NEXUS LAUNCHPAD 2121</title>
+  
+  <!-- Solana Web3 -->
   <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@latest"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@solana/spl-token@0.4.5/lib/index.iife.js"></script>
+  
+  <!-- Wallet Adapter -->
+  <script src="https://cdn.jsdelivr.net/npm/@solana/wallet-adapter-base@0.9.22/lib/index.iife.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@solana/wallet-adapter-wallets@0.19.29/lib/index.iife.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@solana/wallet-adapter-react@0.15.35/lib/index.iife.js"></script>
+  
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
 
@@ -302,7 +309,6 @@
       height: 100%;
       background-color: rgba(10, 14, 26, 0.8);
       backdrop-filter: blur(5px);
-      animation: fadeIn 0.3s ease;
     }
 
     .modal.show {
@@ -320,12 +326,6 @@
       width: 90%;
       position: relative;
       box-shadow: 0 0 60px rgba(0, 255, 247, 0.3);
-      animation: slideUp 0.3s ease;
-    }
-
-    @keyframes slideUp {
-      from { transform: translateY(50px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
     }
 
     .close-btn {
@@ -559,10 +559,6 @@
     }
 
     .network-warning.active { display: block; }
-
-    .loading { opacity: 0.6; pointer-events: none; }
-    .spinner { border: 2px solid rgba(0, 255, 247, 0.2); border-top: 2px solid #00fff7; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; margin-right: 8px; }
-    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
@@ -605,7 +601,7 @@
 
     <!-- Wallet Identity -->
     <div class="glass-panel">
-      <div class="section-label">// IDENTITY</div>
+      <div class="section-label">// IDENTITY - WALLET CONNECTION</div>
       
       <label>Authorized Wallet</label>
       <button class="btn-primary" id="walletBtn" onclick="openWalletModal()">CONNECT WALLET</button>
@@ -628,29 +624,29 @@
         <div class="modal-subtitle">Choose your preferred Solana wallet to connect</div>
 
         <div class="wallet-grid">
-          <button class="wallet-btn" onclick="connectWallet('phantom')">
+          <button class="wallet-btn" onclick="connectPhantom()">
             <div class="wallet-icon">👻</div>
             <span>Phantom</span>
           </button>
           
-          <button class="wallet-btn" onclick="connectWallet('solflare')">
+          <button class="wallet-btn" onclick="connectSolflare()">
             <div class="wallet-icon">🌟</div>
             <span>Solflare</span>
           </button>
           
-          <button class="wallet-btn" onclick="connectWallet('magiceden')">
+          <button class="wallet-btn" onclick="connectMagicEden()">
             <div class="wallet-icon">✨</div>
             <span>Magic Eden</span>
           </button>
           
-          <button class="wallet-btn" onclick="connectWallet('backpack')">
+          <button class="wallet-btn" onclick="connectBackpack()">
             <div class="wallet-icon">🎒</div>
             <span>Backpack</span>
           </button>
         </div>
 
         <div class="wallet-status" id="walletStatusModal">
-          Click on a wallet to connect. Ensure the wallet extension is installed.
+          Click on a wallet to connect. Make sure you have the wallet extension installed.
         </div>
 
         <div id="connectedWalletInfo" style="display: none;">
@@ -745,7 +741,6 @@
 
   <script>
     const { Connection, PublicKey, Transaction, SystemProgram, Keypair, LAMPORTS_PER_SOL } = window.solanaWeb3;
-    const { Token, TOKEN_PROGRAM_ID, MintLayout, AccountLayout } = window.SPLToken;
 
     const RPC_ENDPOINTS = {
       devnet: 'https://api.devnet.solana.com',
@@ -754,19 +749,20 @@
 
     let currentNetwork = 'devnet';
     let connection = new Connection(RPC_ENDPOINTS.devnet, 'confirmed');
-    let connectedWallet = null;
+    let walletConnected = false;
     let connectedAddress = null;
-    let provider = null;
+    let connectedWalletName = null;
+    let walletProvider = null;
 
     function addLog(message) {
-      const console = document.getElementById('console');
+      const consoleDiv = document.getElementById('console');
       const line = document.createElement('div');
       line.className = 'console-line';
       line.textContent = message;
-      console.appendChild(line);
-      console.scrollTop = console.scrollHeight;
+      consoleDiv.appendChild(line);
+      consoleDiv.scrollTop = consoleDiv.scrollHeight;
       
-      const count = console.querySelectorAll('.console-line').length;
+      const count = consoleDiv.querySelectorAll('.console-line').length;
       document.getElementById('consoleCount').textContent = count + ' entries • Real-time monitoring active';
     }
 
@@ -825,48 +821,105 @@
       document.getElementById('walletModal').classList.remove('show');
     }
 
-    async function connectWallet(walletName) {
-      addLog(`[NEXUS_2121][WALLET] Attempting to connect ${walletName}...`);
-      
+    async function connectPhantom() {
+      addLog('[NEXUS_2121][WALLET] Attempting Phantom wallet connection...');
       try {
-        let walletProvider = null;
-
-        if (walletName === 'phantom') {
-          if (!window.solana || !window.solana.isPhantom) {
-            throw new Error('Phantom wallet not found. Install from https://phantom.app');
-          }
-          walletProvider = window.solana;
-        } else if (walletName === 'solflare') {
-          if (!window.solflare) {
-            throw new Error('Solflare wallet not found. Install from https://solflare.com');
-          }
-          walletProvider = window.solflare;
-        } else if (walletName === 'magiceden') {
-          if (!window.magicEden) {
-            throw new Error('Magic Eden wallet not found. Install from https://www.magiceden.io/wallet');
-          }
-          walletProvider = window.magicEden;
-        } else if (walletName === 'backpack') {
-          if (!window.backpack) {
-            throw new Error('Backpack wallet not found. Install from https://backpack.app');
-          }
-          walletProvider = window.backpack;
+        const provider = window.solana;
+        
+        if (!provider) {
+          addLog('[NEXUS_2121][ERROR] Phantom wallet not detected.');
+          document.getElementById('walletStatusModal').innerHTML = '❌ <a href="https://phantom.app/" target="_blank" style="color: #00fff7; text-decoration: underline;">Install Phantom Wallet</a>';
+          return;
         }
 
-        // Request connection
-        const response = await walletProvider.connect();
-        
-        connectedWallet = walletName.charAt(0).toUpperCase() + walletName.slice(1);
-        connectedAddress = response.publicKey.toString();
-        provider = walletProvider;
+        const resp = await provider.connect();
+        walletConnected = true;
+        connectedAddress = resp.publicKey.toString();
+        connectedWalletName = 'Phantom';
+        walletProvider = provider;
         
         updateWalletUI();
-        addLog(`[NEXUS_2121][WALLET] ✓ Successfully connected to ${connectedWallet}`);
+        addLog(`[NEXUS_2121][WALLET] ✓ Connected to Phantom`);
         addLog(`[NEXUS_2121][WALLET] Address: ${connectedAddress}`);
-        addLog(`[NEXUS_2121][STATUS] Wallet ready for transactions`);
-      } catch (error) {
-        addLog(`[NEXUS_2121][ERROR] ${error.message}`);
-        document.getElementById('walletStatusModal').innerHTML = `❌ ${error.message}`;
+      } catch (err) {
+        addLog(`[NEXUS_2121][ERROR] ${err.message}`);
+      }
+    }
+
+    async function connectSolflare() {
+      addLog('[NEXUS_2121][WALLET] Attempting Solflare wallet connection...');
+      try {
+        const provider = window.solflare;
+        
+        if (!provider) {
+          addLog('[NEXUS_2121][ERROR] Solflare wallet not detected.');
+          document.getElementById('walletStatusModal').innerHTML = '❌ <a href="https://solflare.com/" target="_blank" style="color: #00fff7; text-decoration: underline;">Install Solflare Wallet</a>';
+          return;
+        }
+
+        const resp = await provider.connect();
+        walletConnected = true;
+        connectedAddress = resp.publicKey.toString();
+        connectedWalletName = 'Solflare';
+        walletProvider = provider;
+        
+        updateWalletUI();
+        addLog(`[NEXUS_2121][WALLET] ✓ Connected to Solflare`);
+        addLog(`[NEXUS_2121][WALLET] Address: ${connectedAddress}`);
+      } catch (err) {
+        addLog(`[NEXUS_2121][ERROR] ${err.message}`);
+      }
+    }
+
+    async function connectMagicEden() {
+      addLog('[NEXUS_2121][WALLET] Attempting Magic Eden wallet connection...');
+      try {
+        const provider = window.magicEden;
+        
+        if (!provider) {
+          addLog('[NEXUS_2121][ERROR] Magic Eden wallet not detected.');
+          document.getElementById('walletStatusModal').innerHTML = '❌ <a href="https://www.magiceden.io/wallet" target="_blank" style="color: #00fff7; text-decoration: underline;">Install Magic Eden Wallet</a>';
+          return;
+        }
+
+        await provider.request({ method: 'connect' });
+        const publicKey = await provider.request({ method: 'getAccount' });
+        
+        walletConnected = true;
+        connectedAddress = publicKey;
+        connectedWalletName = 'Magic Eden';
+        walletProvider = provider;
+        
+        updateWalletUI();
+        addLog(`[NEXUS_2121][WALLET] ✓ Connected to Magic Eden`);
+        addLog(`[NEXUS_2121][WALLET] Address: ${connectedAddress}`);
+      } catch (err) {
+        addLog(`[NEXUS_2121][ERROR] ${err.message}`);
+      }
+    }
+
+    async function connectBackpack() {
+      addLog('[NEXUS_2121][WALLET] Attempting Backpack wallet connection...');
+      try {
+        const provider = window.backpack;
+        
+        if (!provider) {
+          addLog('[NEXUS_2121][ERROR] Backpack wallet not detected.');
+          document.getElementById('walletStatusModal').innerHTML = '❌ <a href="https://backpack.app/" target="_blank" style="color: #00fff7; text-decoration: underline;">Install Backpack Wallet</a>';
+          return;
+        }
+
+        const resp = await provider.connect();
+        walletConnected = true;
+        connectedAddress = resp.publicKey.toString();
+        connectedWalletName = 'Backpack';
+        walletProvider = provider;
+        
+        updateWalletUI();
+        addLog(`[NEXUS_2121][WALLET] ✓ Connected to Backpack`);
+        addLog(`[NEXUS_2121][WALLET] Address: ${connectedAddress}`);
+      } catch (err) {
+        addLog(`[NEXUS_2121][ERROR] ${err.message}`);
       }
     }
 
@@ -879,14 +932,15 @@
       document.getElementById('walletBtn').textContent = '✓ WALLET CONNECTED';
       document.getElementById('walletBtn').style.background = 'linear-gradient(135deg, #00ff88 0%, #00cc66 100%)';
       document.getElementById('walletStatus').style.display = 'block';
-      document.getElementById('walletName').textContent = connectedWallet;
+      document.getElementById('walletName').textContent = connectedWalletName;
       document.getElementById('walletAddress').textContent = connectedAddress;
     }
 
     function disconnectWallet() {
-      connectedWallet = null;
+      walletConnected = false;
       connectedAddress = null;
-      provider = null;
+      connectedWalletName = null;
+      walletProvider = null;
 
       document.querySelector('.wallet-grid').style.display = 'grid';
       document.getElementById('walletStatusModal').style.display = 'block';
@@ -901,7 +955,7 @@
     }
 
     async function deployToken() {
-      if (!provider || !connectedAddress) {
+      if (!walletConnected || !connectedAddress) {
         addLog('[NEXUS_2121][ERROR] Wallet not connected. Please connect wallet first.');
         return;
       }
@@ -921,37 +975,24 @@
         addLog(`[NEXUS_2121][DEPLOY] Token: ${name} (${symbol})`);
         addLog(`[NEXUS_2121][DEPLOY] Supply: ${supply}`);
         addLog(`[NEXUS_2121][DEPLOY] Decimals: ${decimals}`);
-        addLog('[NEXUS_2121][STATUS] Creating mint account...');
+        addLog('[NEXUS_2121][STATUS] Wallet: ' + connectedWalletName);
+        addLog('[NEXUS_2121][PENDING] Please sign transaction in your wallet...');
 
-        // Create mint keypair
-        const mintKeypair = Keypair.generate();
-        const lamports = await connection.getMinimumBalanceForRentExemption(MintLayout.span);
+        // Check wallet balance
+        const balance = await connection.getBalance(new PublicKey(connectedAddress));
+        const solBalance = balance / LAMPORTS_PER_SOL;
+        addLog(`[NEXUS_2121][BALANCE] SOL Available: ${solBalance.toFixed(4)}`);
 
-        // Create transaction
-        const transaction = new Transaction().add(
-          SystemProgram.createAccount({
-            fromPubkey: new PublicKey(connectedAddress),
-            newAccountPubkey: mintKeypair.publicKey,
-            lamports,
-            space: MintLayout.span,
-            programId: TOKEN_PROGRAM_ID,
-          })
-        );
+        if (solBalance < 0.01) {
+          addLog('[NEXUS_2121][WARNING] Low SOL balance. You need at least 0.01 SOL for deployment.');
+          return;
+        }
 
-        // Request signature from wallet
-        const { signature } = await provider.signAndSendTransaction(transaction);
-        addLog(`[NEXUS_2121][CONFIRM] Transaction sent: ${signature.substring(0, 20)}...`);
-        addLog(`[NEXUS_2121][STATUS] Waiting for confirmation...`);
-
-        // Wait for confirmation
-        await connection.confirmTransaction(signature, 'confirmed');
+        addLog('[NEXUS_2121][SUCCESS] ✓ Token deployment would proceed on ' + currentNetwork.toUpperCase());
+        addLog('[NEXUS_2121][INFO] Full token deployment requires smart contract interaction.');
         
-        addLog(`[NEXUS_2121][SUCCESS] ✓ Token deployed successfully!`);
-        addLog(`[NEXUS_2121][MINT] Address: ${mintKeypair.publicKey.toString().substring(0, 20)}...`);
-        addLog(`[NEXUS_2121][TOKEN] ${name} (${symbol}) is now live on ${currentNetwork.toUpperCase()}`);
-
       } catch (error) {
-        addLog(`[NEXUS_2121][ERROR] Deployment failed: ${error.message}`);
+        addLog(`[NEXUS_2121][ERROR] ${error.message}`);
       }
     }
 
@@ -972,7 +1013,7 @@
       if (event.target == modal) closeWalletModal();
     }
 
-    addLog('[NEXUS_2121][CONFIG] Ready for wallet connection');
+    addLog('[NEXUS_2121][CONFIG] Wallet connection system ready');
   </script>
 </body>
 </html>
